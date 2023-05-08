@@ -1,0 +1,14 @@
+{
+  "name": "woo-ipos",
+  "version": "1.0.0",
+  "description": "A standardized, organized, object-oriented foundation for building high-quality WordPress Plugins.",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.5.10"
+  }
+}
