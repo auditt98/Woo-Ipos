@@ -38,3 +38,5 @@ intermediate
 .idea
 cache
 .builds
+
+.node_modules

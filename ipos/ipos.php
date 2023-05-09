@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name: IPOS API Button
- * Description: A plugin that adds a button to call an API to the IPOS section of the admin menu.
+ * Plugin Name: IPOS
+ * Description: A plugin that add Woocommerce integration to IPOS.
  * Version: 1.0
- * Author: Your Name
- * Author URI: https://yourwebsite.com
+ * Author: auditt98
+ * Author URI: 
  */
 
-// Add the IPOS menu item
-add_action('admin_menu', 'ipos_menu');
-function ipos_menu() {
-  add_menu_page(
-    'IPOS API',
-    'IPOS',
-    'manage_options',
-    'ipos-api',
-    'ipos_page'
-  );
+function ipos_settings_page() {
+  if (!current_user_can('manage_options')) {
+    wp_die('You do not have sufficient permissions to access this page.');
+  }
+  ?>
+  <div class="wrap">
+    <h1>IPOS Settings Page</h1>
+  </div>
+
+  <?php
 }
 
 // Display the IPOS page
@@ -30,29 +30,21 @@ function ipos_page() {
   ?>
   <div class="wrap">
     <h1>IPOS API</h1>
-    <p>Click the button below to call the IPOS API:</p>
-    <button id="ipos-button" class="button button-primary">Call API</button>
   </div>
-
-  <script>
-    jQuery(document).ready(function($) {
-      $('#ipos-button').click(function() {
-        // Call the API using jQuery's AJAX function
-        $.ajax({
-          url: 'https://api.ipos.com',
-          type: 'POST',
-          data: {
-            // Add any data you want to send to the API here
-          },
-          success: function(response) {
-            // Handle the API response here
-          },
-          error: function(xhr, status, error) {
-            // Handle errors here
-          }
-        });
-      });
-    });
-  </script>
   <?php
 }
+
+function ipos_menu() {
+  add_menu_page(
+    'IPOS',
+    'IPOS',
+    'manage_options',
+    'ipos-api',
+    'ipos_page'
+  );
+
+  add_submenu_page('ipos-api', 'IPOS Settings', 'IPOS Settings', 'manage_options', 'ipos-settings', 'ipos_settings_page');
+}
+
+// Add the IPOS menu item
+add_action('admin_menu', 'ipos_menu');
