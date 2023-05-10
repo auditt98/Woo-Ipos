@@ -209,7 +209,7 @@ class Woo_Ipos_Admin
 
 		register_setting(
 			'woo_ipos_general_settings',
-			'woo_ipos_api_key_setting',
+			'woo_ipos_api_key_setting'
 		);
 
 		register_setting(
