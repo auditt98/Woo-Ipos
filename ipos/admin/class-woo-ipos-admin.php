@@ -200,16 +200,6 @@ class Woo_Ipos_Admin
 			'wp_data' => 'option'
 		);
 
-		$callback_args = array(
-			'type' => 'input',
-			'subtype' => 'text',
-			'id' => 'woo_ipos_callback_url_setting',
-			'name' => 'woo_ipos_callback_url_setting',
-			'required' => 'true',
-			'get_options_list' => '',
-			'value_type' => 'normal',
-			'wp_data' => 'option'
-		);
 
 		add_settings_field(
 			'woo_ipos_api_key_setting',
@@ -220,24 +210,10 @@ class Woo_Ipos_Admin
 			$args
 		);
 
-		add_settings_field(
-			'woo_ipos_callback_url_setting',
-			'Callback URL',
-			array($this, 'woo_ipos_render_settings_field'),
-			'woo_ipos_general_settings',
-			'woo_ipos_general_section',
-			$callback_args
-		);
-
 
 		register_setting(
 			'woo_ipos_general_settings',
 			'woo_ipos_api_key_setting'
-		);
-
-		register_setting(
-			'woo_ipos_general_settings',
-			'woo_ipos_callback_url_setting'
 		);
 	}
 
