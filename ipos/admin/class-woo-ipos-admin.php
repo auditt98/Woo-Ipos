@@ -55,29 +55,28 @@ class Woo_Ipos_Admin
 		$this->version = $version;
 		add_action('admin_menu', array($this, 'addPluginAdminMenu'), 9);
 		add_action('admin_init', array($this, 'registerAndBuildFields'));
+		add_action('rest_api_init', array($this, 'registerWebhook'));
 	}
 
-	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
-	public function enqueue_styles()
+	public function woo_ipos_callback($request)
 	{
+		$data = $request->get_body();
+    $json = json_decode($data, true);
+		return array( 'message' => 'testing route', 'data' => $json);
+	}
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Woo_Ipos_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Woo_Ipos_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
+	public function registerWebhook()
+	{
+		$this->createWebhook('/callback', 'woo_ipos_callback');
+	}
 
-		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-ipos-admin.css', array(), $this->version, 'all');
+
+	public function createWebhook($route, $callback_name)
+	{
+		register_rest_route('/woo-ipos/v1', $route, array(
+			'methods' => 'POST',
+			'callback' => array($this, $callback_name),
+		));
 	}
 
 	/**
@@ -101,6 +100,30 @@ class Woo_Ipos_Admin
 		 */
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/woo-ipos-admin.js', array('jquery'), $this->version, false);
+	}
+
+
+	/**
+	 * Register the stylesheets for the admin area.
+	 *
+	 * @since    1.0.0
+	 */
+	public function enqueue_styles()
+	{
+
+		/**
+		 * This function is provided for demonstration purposes only.
+		 *
+		 * An instance of this class should be passed to the run() function
+		 * defined in Woo_Ipos_Loader as all of the hooks are defined
+		 * in that particular class.
+		 *
+		 * The Woo_Ipos_Loader will then create the relationship
+		 * between the defined hooks and the functions defined in this
+		 * class.
+		 */
+
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-ipos-admin.css', array(), $this->version, 'all');
 	}
 
 	public function addPluginAdminMenu()
