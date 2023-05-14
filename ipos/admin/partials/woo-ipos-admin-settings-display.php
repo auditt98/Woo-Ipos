@@ -23,7 +23,7 @@
     settings_fields('woo_ipos_general_settings');
     do_settings_sections('woo_ipos_general_settings');
     ?>
-    <div>Callback urls: {domain}/wp-json/woo-ipos/v1/callback</div>
+    <div>Callback urls: <?php echo home_url('/wp-json/woo-ipos/v1/callback'); ?></div>
     <?php submit_button(); ?>
   </form>
 </div>

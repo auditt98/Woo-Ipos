@@ -61,8 +61,38 @@ class Woo_Ipos_Admin
 	public function woo_ipos_callback($request)
 	{
 		$data = $request->get_body();
-    $json = json_decode($data, true);
-		return array( 'message' => 'testing route', 'data' => $json);
+		$json = json_decode($data, true);
+		return array('data' => $this->ipos_event_handler($json));
+	}
+
+	public function ipos_event_handler($data)
+	{
+		if (isset($data['event_id']) && ($data['event_id'] == 14 || $data['event_id'] == '14')) {
+			return $this->ipos_new_member_handler($data);
+		}
+	}
+
+	public function ipos_new_member_handler($data)
+	{
+		// create wordpress user here
+		$email = $data["membership"]["phone_number"] . '@gmail.com';
+		$password = $data["membership"]["phone_number"];
+		$username = $data["membership"]["phone_number"];
+		$user_id = wp_create_user($username, $password, $email);
+		// Check if user creation was successful
+		if (!is_wp_error($user_id)) {
+			// User created successfully, update the role of the user to customer
+			$user = new WP_User($user_id);
+			$user->set_role('customer');
+			update_user_meta($user_id, 'billing_phone', $data["membership"]["phone_number"]);
+			update_user_meta($user_id, 'shipping_phone', $data["membership"]["phone_number"]);
+			// return the data
+			$data['user_id'] = $user_id;
+			return $data;
+		} else {
+			// Error creating user, handle the error here
+			return "Error creating user";
+		}
 	}
 
 	public function registerWebhook()
@@ -200,6 +230,25 @@ class Woo_Ipos_Admin
 			'wp_data' => 'option'
 		);
 
+		$pos_parent_args = array(
+			'type'      => 'input',
+			'subtype'   => 'text',
+			'id'    => 'woo_ipos_pos_parent_setting',
+			'name'      => 'woo_ipos_pos_parent_setting',
+			'required' => 'true',
+			'get_options_list' => '',
+			'value_type' => 'normal',
+			'wp_data' => 'option'
+		);
+
+		add_settings_field(
+			'woo_ipos_pos_parent_setting',
+			'POS Parent',
+			array($this, 'woo_ipos_render_settings_field'),
+			'woo_ipos_general_settings',
+			'woo_ipos_general_section',
+			$pos_parent_args
+		);
 
 		add_settings_field(
 			'woo_ipos_api_key_setting',
@@ -213,7 +262,8 @@ class Woo_Ipos_Admin
 
 		register_setting(
 			'woo_ipos_general_settings',
-			'woo_ipos_api_key_setting'
+			'woo_ipos_api_key_setting',
+			'woo_ipos_pos_parent_setting'
 		);
 	}
 
