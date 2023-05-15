@@ -129,7 +129,7 @@ class Woo_Ipos_Admin
 		</style>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
 			<label for="billing_phone"><?php _e('Phone Number', 'woocommerce'); ?> <span class="required">*</span></label>
-		<div class="relative">
+		<div class="relative" style="margin-bottom: 17px">
 			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 				<span class="text-gray-500 sm:text-sm">+84</span>
 			</div>
