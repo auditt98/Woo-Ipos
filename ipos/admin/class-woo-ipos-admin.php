@@ -57,8 +57,11 @@ class Woo_Ipos_Admin
 		add_action('admin_init', array($this, 'registerAndBuildFields'));
 		add_action('rest_api_init', array($this, 'registerWebhook'));
 		add_action('woocommerce_register_form_start', array($this, 'customize_woo_registration_form'));
-		add_action('woocommerce_register_post', 'disable_email_validation', 10, 3);
+		add_action('woocommerce_register_post', array($this, 'disable_email_validation'), 10, 3);
+		add_action('woocommerce_created_customer', array($this, 'sync_created_customer_to_ipos'), 10, 3);
 	}
+
+	// CUSTOMIZING WOOCOMMERCE REGISTRATION FORM
 
 	function disable_email_validation($username, $email, $errors)
 	{
@@ -161,6 +164,15 @@ class Woo_Ipos_Admin
 
 	}
 
+
+	// SYNCING CREATED CUSTOMER TO IPOS
+	public function sync_created_customer_to_ipos($customer_id, $new_customer_data, $password_generated) {
+		$user = new WP_User($user_id);
+	}
+
+
+
+	// SETUP CALLBACK FOR IPOS
 	public function woo_ipos_callback($request)
 	{
 		$data = $request->get_body();
@@ -168,10 +180,7 @@ class Woo_Ipos_Admin
 		return array('data' => $this->ipos_event_handler($json));
 	}
 
-	public function set_woo_registration_form()
-	{
-	}
-
+	// HANDLING IPOS EVENT 
 	public function ipos_event_handler($data)
 	{
 		if (isset($data['event_id']) && ($data['event_id'] == 14 || $data['event_id'] == '14')) {
@@ -179,6 +188,7 @@ class Woo_Ipos_Admin
 		}
 	}
 
+	// HANDLING NEW MEMBER EVENT => Sync IPOS Customer to Wordpress
 	public function ipos_new_member_handler($data)
 	{
 		// create wordpress user here
@@ -308,7 +318,7 @@ class Woo_Ipos_Admin
 	}
 
 
-
+	// COMMON FUNCTION TO CREATE INPUT FIELD
 	public function registerAndBuildFields()
 	{
 		/**
