@@ -56,6 +56,109 @@ class Woo_Ipos_Admin
 		add_action('admin_menu', array($this, 'addPluginAdminMenu'), 9);
 		add_action('admin_init', array($this, 'registerAndBuildFields'));
 		add_action('rest_api_init', array($this, 'registerWebhook'));
+		add_action('woocommerce_register_form_start', array($this, 'customize_woo_registration_form'));
+		add_action('woocommerce_register_post', 'disable_email_validation', 10, 3);
+	}
+
+	function disable_email_validation($username, $email, $errors)
+	{
+		// Remove the email validation error
+		if (isset($errors->errors['email'])) {
+			unset($errors->errors['email']);
+		}
+	}
+
+	public function customize_woo_registration_form()
+	{
+?>
+		<style>
+			.woocommerce-form-register {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.woocommerce-form-row--first {
+				order: -1;
+			}
+		</style>
+		<style>
+			.relative {
+				position: relative;
+			}
+
+			.pointer-events-none {
+				pointer-events: none;
+			}
+
+			.absolute {
+				position: absolute;
+			}
+
+			.inset-y-0 {
+				top: 0;
+				bottom: 0;
+			}
+
+			.left-0 {
+				left: 0;
+			}
+
+			.flex {
+				display: flex;
+			}
+
+			.items-center {
+				align-items: center;
+			}
+
+			.pl-3 {
+				padding-left: 0.75rem;
+			}
+
+			.text-gray-500 {
+				color: #6b7280;
+			}
+
+			.sm\:text-sm {
+				font-size: 0.875rem;
+			}
+
+			.phone-prefix {
+				display: inline-block;
+			}
+		</style>
+		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+			<label for="billing_phone"><?php _e('Phone Number', 'woocommerce'); ?> <span class="required">*</span></label>
+		<div class="relative">
+			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+				<span class="text-gray-500 sm:text-sm">+84</span>
+			</div>
+			<input style="padding-left: 3rem; margin-bottom: 0px" type="text" pattern="(3|5|7|8|9])+([0-9]{8})\b" title="Vui lòng nhập đúng số điện thoại" class="woocommerce-Input woocommerce-Input--text input-text" required name="billing_phone" id="billing_phone" value="<?php if (!empty($_POST['billing_phone'])) esc_attr_e($_POST['billing_phone']); ?>" />
+		</div>
+		</p>
+
+		<script>
+			jQuery(document).ready(function($) {
+				$('#reg_email').attr('type', 'hidden');
+				$('label[for="reg_email"]').hide();
+				$('#billing_phone').on('input', function() {
+					var phone = $(this).val();
+					var sanitizedPhone = phone.replace(/[^0-9]/g, "");
+					if (sanitizedPhone[0] === '0') {
+						sanitizedPhone = sanitizedPhone.substring(1);
+					}
+
+					if (sanitizedPhone.length > 9) {
+						sanitizedPhone = sanitizedPhone.substring(0, 9);
+					}
+					$(this).val(sanitizedPhone);
+					var email = '84' + sanitizedPhone + '@gmail.com';
+					$('#reg_email').val(email);
+				});
+			});
+		</script>
+<?php
+
 	}
 
 	public function woo_ipos_callback($request)
@@ -63,6 +166,10 @@ class Woo_Ipos_Admin
 		$data = $request->get_body();
 		$json = json_decode($data, true);
 		return array('data' => $this->ipos_event_handler($json));
+	}
+
+	public function set_woo_registration_form()
+	{
 	}
 
 	public function ipos_event_handler($data)
@@ -200,6 +307,8 @@ class Woo_Ipos_Admin
 		);
 	}
 
+
+
 	public function registerAndBuildFields()
 	{
 		/**
@@ -219,6 +328,8 @@ class Woo_Ipos_Admin
 		);
 		unset($args);
 		unset($callback_args);
+		unset($pos_parent_args);
+		unset($modify_registration_args);
 		$args = array(
 			'type'      => 'input',
 			'subtype'   => 'text',
@@ -239,6 +350,26 @@ class Woo_Ipos_Admin
 			'get_options_list' => '',
 			'value_type' => 'normal',
 			'wp_data' => 'option'
+		);
+
+		$modify_registration_args = array(
+			'type' => 'input',
+			'subtype' => 'checkbox',
+			'id' => 'woo_ipos_modify_registration_setting',
+			'name' => 'woo_ipos_modify_registration_setting',
+			'required' => 'true',
+			'get_options_list' => '',
+			'value_type' => 'normal',
+			'wp_data' => 'option'
+		);
+
+		add_settings_field(
+			'woo_ipos_modify_registration_setting',
+			'Modify Woocommerce Registration form to require phone number instead of email',
+			array($this, 'woo_ipos_render_settings_field'),
+			'woo_ipos_general_settings',
+			'woo_ipos_general_section',
+			$modify_registration_args
 		);
 
 		add_settings_field(
@@ -263,7 +394,16 @@ class Woo_Ipos_Admin
 		register_setting(
 			'woo_ipos_general_settings',
 			'woo_ipos_api_key_setting',
-			'woo_ipos_pos_parent_setting'
+		);
+
+		register_setting(
+			'woo_ipos_general_settings',
+			'woo_ipos_pos_parent_setting',
+		);
+
+		register_setting(
+			'woo_ipos_general_settings',
+			'woo_ipos_modify_registration_setting',
 		);
 	}
 
