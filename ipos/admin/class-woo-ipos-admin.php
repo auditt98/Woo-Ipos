@@ -63,6 +63,8 @@ class Woo_Ipos_Admin
 		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
 	}
 
+	//-------------------- PART 1: MEMBERSHIP -------------------//
+
 	// CUSTOMIZING WOOCOMMERCE REGISTRATION FORM
 
 	public function display_customer_info()
@@ -266,7 +268,20 @@ class Woo_Ipos_Admin
 	// SYNCING CREATED CUSTOMER TO IPOS
 	public function sync_created_customer_to_ipos($customer_id, $new_customer_data, $password_generated)
 	{
-		$user = new WP_User($user_id);
+		$user = new WP_User($customer_id);
+		$user_login = $user->get('user_login');
+		//CALL API
+		$api_key = get_option('woo_ipos_api_key_setting');
+		$pos_parent = get_option('woo_ipos_pos_parent_setting');
+		$add_membership_url = 'add_membership';
+		$add_membership_method = 'POST';
+		$json_body = json_encode(array('phone' => $user_login));
+		$query_params = array(
+			'access_token' => $api_key,
+			'pos_parent' => $pos_parent
+		);
+		$response = $this->call_api($add_membership_url, $add_membership_method, array('Content-Type: application/json'), $json_body, $query_params);
+		error_log('--------SYNC RESPONSE---------' . print_r($response, true));
 	}
 
 	// SETUP CALLBACK FOR IPOS
@@ -585,6 +600,9 @@ class Woo_Ipos_Admin
 		);
 
 		$response = wp_remote_request($url_with_params, $args);
+
+		error_log('--------REQUEST URL---------' . print_r($url_with_params, true));
+		error_log('--------REQUEST BODY---------' . print_r($body, true));
 
 		if (is_wp_error($response)) {
 			// Handle error
