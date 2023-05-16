@@ -60,9 +60,15 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_register_post', array($this, 'disable_email_validation'), 10, 3);
 		add_action('woocommerce_created_customer', array($this, 'sync_created_customer_to_ipos'), 10, 3);
 		add_action('woocommerce_login_form_start', array($this, 'customize_woo_login_form'));
+		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
 	}
 
 	// CUSTOMIZING WOOCOMMERCE REGISTRATION FORM
+
+	public function display_customer_info()
+	{
+		return 'This is a test shortcode';
+	}
 
 	function disable_email_validation($username, $email, $errors)
 	{
@@ -161,13 +167,13 @@ class Woo_Ipos_Admin
 				});
 			});
 		</script>
-<?php
+	<?php
 
 	}
 
 	public function customize_woo_login_form()
 	{
-?>
+	?>
 		<style>
 			.woocommerce-form-login {
 				display: flex;
@@ -258,11 +264,10 @@ class Woo_Ipos_Admin
 
 	}
 	// SYNCING CREATED CUSTOMER TO IPOS
-	public function sync_created_customer_to_ipos($customer_id, $new_customer_data, $password_generated) {
+	public function sync_created_customer_to_ipos($customer_id, $new_customer_data, $password_generated)
+	{
 		$user = new WP_User($user_id);
 	}
-
-
 
 	// SETUP CALLBACK FOR IPOS
 	public function woo_ipos_callback($request)
@@ -365,6 +370,7 @@ class Woo_Ipos_Admin
 		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/woo-ipos-admin.css', array(), $this->version, 'all');
 	}
 
+	//ADD A MENU TO THE ADMIN DASHBOARD
 	public function addPluginAdminMenu()
 	{
 		//add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position );
@@ -374,11 +380,13 @@ class Woo_Ipos_Admin
 		add_submenu_page($this->plugin_name, 'Woo IPOS Settings', 'Settings', 'administrator', $this->plugin_name . '-settings', array($this, 'displayPluginAdminSettings'));
 	}
 
+	// DISPLAY DASHBOARD PAGE
 	public function displayPluginAdminDashboard()
 	{
 		require_once 'partials/' . $this->plugin_name . '-admin-display.php';
 	}
 
+	// DISPLAY SETTINGS PAGE
 	public function displayPluginAdminSettings()
 	{
 		// set this var to be used in the settings-display view
@@ -409,6 +417,59 @@ class Woo_Ipos_Admin
 		);
 	}
 
+	public function woo_ipos_display_general_account()
+	{
+		echo '<p>These settings apply to all Woo IPOS functionality.</p>';
+	}
+
+	public function woo_ipos_render_settings_field($args)
+	{
+		/* EXAMPLE INPUT
+							'type'      => 'input',
+							'subtype'   => '',
+							'id'    => $this->plugin_name.'_example_setting',
+							'name'      => $this->plugin_name.'_example_setting',
+							'required' => 'required="required"',
+							'get_option_list' => "",
+								'value_type' = serialized OR normal,
+		'wp_data'=>(option or post_meta),
+		'post_id' =>
+		*/
+		if ($args['wp_data'] == 'option') {
+			$wp_data_value = get_option($args['name']);
+		} elseif ($args['wp_data'] == 'post_meta') {
+			$wp_data_value = get_post_meta($args['post_id'], $args['name'], true);
+		}
+
+		switch ($args['type']) {
+
+			case 'input':
+				$value = ($args['value_type'] == 'serialized') ? serialize($wp_data_value) : $wp_data_value;
+				if ($args['subtype'] != 'checkbox') {
+					$prependStart = (isset($args['prepend_value'])) ? '<div class="input-prepend"> <span class="add-on">' . $args['prepend_value'] . '</span>' : '';
+					$prependEnd = (isset($args['prepend_value'])) ? '</div>' : '';
+					$step = (isset($args['step'])) ? 'step="' . $args['step'] . '"' : '';
+					$min = (isset($args['min'])) ? 'min="' . $args['min'] . '"' : '';
+					$max = (isset($args['max'])) ? 'max="' . $args['max'] . '"' : '';
+					if (isset($args['disabled'])) {
+						// hide the actual input bc if it was just a disabled input the informaiton saved in the database would be wrong - bc it would pass empty values and wipe the actual information
+						echo $prependStart . '<input type="' . $args['subtype'] . '" id="' . $args['id'] . '_disabled" ' . $step . ' ' . $max . ' ' . $min . ' name="' . $args['name'] . '_disabled" size="40" disabled value="' . esc_attr($value) . '" /><input type="hidden" id="' . $args['id'] . '" ' . $step . ' ' . $max . ' ' . $min . ' name="' . $args['name'] . '" size="40" value="' . esc_attr($value) . '" />' . $prependEnd;
+					} else {
+						echo $prependStart . '<input type="' . $args['subtype'] . '" id="' . $args['id'] . '" "' . $args['required'] . '" ' . $step . ' ' . $max . ' ' . $min . ' name="' . $args['name'] . '" size="40" value="' . esc_attr($value) . '" />' . $prependEnd;
+					}
+					/*<input required="required" '.$disabled.' type="number" step="any" id="'.$this->plugin_name.'_cost2" name="'.$this->plugin_name.'_cost2" value="' . esc_attr( $cost ) . '" size="25" /><input type="hidden" id="'.$this->plugin_name.'_cost" step="any" name="'.$this->plugin_name.'_cost" value="' . esc_attr( $cost ) . '" />*/
+				} else {
+					$checked = ($value) ? 'checked' : '';
+					echo '<input type="' . $args['subtype'] . '" id="' . $args['id'] . '" "' . $args['required'] . '" name="' . $args['name'] . '" size="40" value="1" ' . $checked . ' />';
+				}
+				break;
+			default:
+				# code...
+				break;
+		}
+	}
+
+	//---------- COMMON FUNCTIONS ----------//
 
 	// COMMON FUNCTION TO CREATE INPUT FIELD
 	public function registerAndBuildFields()
@@ -509,55 +570,34 @@ class Woo_Ipos_Admin
 		);
 	}
 
-	public function woo_ipos_display_general_account()
+	// COMMON FUNCTION TO CALL API
+	function call_api($url, $method = 'GET', $headers = array(), $body = '', $query_params = array())
 	{
-		echo '<p>These settings apply to all Woo IPOS functionality.</p>';
-	}
+		$base_url = 'https://api.foodbook.vn/ipos/ws/xpartner/';
 
-	public function woo_ipos_render_settings_field($args)
-	{
-		/* EXAMPLE INPUT
-							'type'      => 'input',
-							'subtype'   => '',
-							'id'    => $this->plugin_name.'_example_setting',
-							'name'      => $this->plugin_name.'_example_setting',
-							'required' => 'required="required"',
-							'get_option_list' => "",
-								'value_type' = serialized OR normal,
-		'wp_data'=>(option or post_meta),
-		'post_id' =>
-		*/
-		if ($args['wp_data'] == 'option') {
-			$wp_data_value = get_option($args['name']);
-		} elseif ($args['wp_data'] == 'post_meta') {
-			$wp_data_value = get_post_meta($args['post_id'], $args['name'], true);
+		// Combine the URL and query parameters
+		$url_with_params = add_query_arg($query_params, $base_url . $url);
+
+		$args = array(
+			'method'  => $method,
+			'headers' => $headers,
+			'body'    => $body,
+		);
+
+		$response = wp_remote_request($url_with_params, $args);
+
+		if (is_wp_error($response)) {
+			// Handle error
+			return false;
 		}
 
-		switch ($args['type']) {
+		$response_code = wp_remote_retrieve_response_code($response);
+		$response_body = wp_remote_retrieve_body($response);
 
-			case 'input':
-				$value = ($args['value_type'] == 'serialized') ? serialize($wp_data_value) : $wp_data_value;
-				if ($args['subtype'] != 'checkbox') {
-					$prependStart = (isset($args['prepend_value'])) ? '<div class="input-prepend"> <span class="add-on">' . $args['prepend_value'] . '</span>' : '';
-					$prependEnd = (isset($args['prepend_value'])) ? '</div>' : '';
-					$step = (isset($args['step'])) ? 'step="' . $args['step'] . '"' : '';
-					$min = (isset($args['min'])) ? 'min="' . $args['min'] . '"' : '';
-					$max = (isset($args['max'])) ? 'max="' . $args['max'] . '"' : '';
-					if (isset($args['disabled'])) {
-						// hide the actual input bc if it was just a disabled input the informaiton saved in the database would be wrong - bc it would pass empty values and wipe the actual information
-						echo $prependStart . '<input type="' . $args['subtype'] . '" id="' . $args['id'] . '_disabled" ' . $step . ' ' . $max . ' ' . $min . ' name="' . $args['name'] . '_disabled" size="40" disabled value="' . esc_attr($value) . '" /><input type="hidden" id="' . $args['id'] . '" ' . $step . ' ' . $max . ' ' . $min . ' name="' . $args['name'] . '" size="40" value="' . esc_attr($value) . '" />' . $prependEnd;
-					} else {
-						echo $prependStart . '<input type="' . $args['subtype'] . '" id="' . $args['id'] . '" "' . $args['required'] . '" ' . $step . ' ' . $max . ' ' . $min . ' name="' . $args['name'] . '" size="40" value="' . esc_attr($value) . '" />' . $prependEnd;
-					}
-					/*<input required="required" '.$disabled.' type="number" step="any" id="'.$this->plugin_name.'_cost2" name="'.$this->plugin_name.'_cost2" value="' . esc_attr( $cost ) . '" size="25" /><input type="hidden" id="'.$this->plugin_name.'_cost" step="any" name="'.$this->plugin_name.'_cost" value="' . esc_attr( $cost ) . '" />*/
-				} else {
-					$checked = ($value) ? 'checked' : '';
-					echo '<input type="' . $args['subtype'] . '" id="' . $args['id'] . '" "' . $args['required'] . '" name="' . $args['name'] . '" size="40" value="1" ' . $checked . ' />';
-				}
-				break;
-			default:
-				# code...
-				break;
-		}
+		// Handle the API response as needed
+		// For example, you can decode JSON response using:
+		$decoded_response = json_decode($response_body);
+
+		return $decoded_response;
 	}
 }
