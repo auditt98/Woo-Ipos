@@ -59,6 +59,7 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_register_form_start', array($this, 'customize_woo_registration_form'));
 		add_action('woocommerce_register_post', array($this, 'disable_email_validation'), 10, 3);
 		add_action('woocommerce_created_customer', array($this, 'sync_created_customer_to_ipos'), 10, 3);
+		add_action('woocommerce_login_form_start', array($this, 'customize_woo_login_form'));
 	}
 
 	// CUSTOMIZING WOOCOMMERCE REGISTRATION FORM
@@ -131,12 +132,12 @@ class Woo_Ipos_Admin
 			}
 		</style>
 		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-			<label for="billing_phone"><?php _e('Phone Number', 'woocommerce'); ?> <span class="required">*</span></label>
+			<label for="billing_phone_register"><?php _e('Phone Number', 'woocommerce'); ?> <span class="required">*</span></label>
 		<div class="relative" style="margin-bottom: 17px">
 			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 				<span class="text-gray-500 sm:text-sm">+84</span>
 			</div>
-			<input style="padding-left: 3rem; margin-bottom: 0px" type="text" pattern="(3|5|7|8|9])+([0-9]{8})\b" title="Vui lòng nhập đúng số điện thoại" class="woocommerce-Input woocommerce-Input--text input-text" required name="billing_phone" id="billing_phone" value="<?php if (!empty($_POST['billing_phone'])) esc_attr_e($_POST['billing_phone']); ?>" />
+			<input style="padding-left: 3rem; margin-bottom: 0px" type="text" pattern="(3|5|7|8|9])+([0-9]{8})\b" title="Vui lòng nhập đúng số điện thoại" class="woocommerce-Input woocommerce-Input--text input-text" required name="billing_phone_register" id="billing_phone_register" value="<?php if (!empty($_POST['billing_phone_register'])) esc_attr_e($_POST['billing_phone_register']); ?>" />
 		</div>
 		</p>
 
@@ -144,7 +145,7 @@ class Woo_Ipos_Admin
 			jQuery(document).ready(function($) {
 				$('#reg_email').attr('type', 'hidden');
 				$('label[for="reg_email"]').hide();
-				$('#billing_phone').on('input', function() {
+				$('#billing_phone_register').on('input', function() {
 					var phone = $(this).val();
 					var sanitizedPhone = phone.replace(/[^0-9]/g, "");
 					if (sanitizedPhone[0] === '0') {
@@ -164,7 +165,98 @@ class Woo_Ipos_Admin
 
 	}
 
+	public function customize_woo_login_form()
+	{
+?>
+		<style>
+			.woocommerce-form-login {
+				display: flex;
+				flex-direction: column;
+			}
 
+			.woocommerce-form-row--first {
+				order: -1;
+			}
+		</style>
+		<style>
+			.relative {
+				position: relative;
+			}
+
+			.pointer-events-none {
+				pointer-events: none;
+			}
+
+			.absolute {
+				position: absolute;
+			}
+
+			.inset-y-0 {
+				top: 0;
+				bottom: 0;
+			}
+
+			.left-0 {
+				left: 0;
+			}
+
+			.flex {
+				display: flex;
+			}
+
+			.items-center {
+				align-items: center;
+			}
+
+			.pl-3 {
+				padding-left: 0.75rem;
+			}
+
+			.text-gray-500 {
+				color: #6b7280;
+			}
+
+			.sm\:text-sm {
+				font-size: 0.875rem;
+			}
+
+			.phone-prefix {
+				display: inline-block;
+			}
+		</style>
+		<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+			<label for="billing_phone_login"><?php _e('Phone Number', 'woocommerce'); ?> <span class="required">*</span></label>
+		<div class="relative" style="margin-bottom: 17px">
+			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+				<span class="text-gray-500 sm:text-sm">+84</span>
+			</div>
+			<input style="padding-left: 3rem; margin-bottom: 0px" type="text" pattern="(3|5|7|8|9])+([0-9]{8})\b" title="Vui lòng nhập đúng số điện thoại" class="woocommerce-Input woocommerce-Input--text input-text" required name="billing_phone_login" id="billing_phone_login" value="<?php if (!empty($_POST['billing_phone_login'])) esc_attr_e($_POST['billing_phone_login']); ?>" />
+		</div>
+		</p>
+
+		<script>
+			jQuery(document).ready(function($) {
+				$('#username').attr('type', 'hidden');
+				$('label[for="username"]').hide();
+				$('#billing_phone_login').on('input', function() {
+					var phone = $(this).val();
+					var sanitizedPhone = phone.replace(/[^0-9]/g, "");
+					if (sanitizedPhone[0] === '0') {
+						sanitizedPhone = sanitizedPhone.substring(1);
+					}
+
+					if (sanitizedPhone.length > 9) {
+						sanitizedPhone = sanitizedPhone.substring(0, 9);
+					}
+					$(this).val(sanitizedPhone);
+					var email = '84' + sanitizedPhone + '@gmail.com';
+					$('#username').val(email);
+				});
+			});
+		</script>
+<?php
+
+	}
 	// SYNCING CREATED CUSTOMER TO IPOS
 	public function sync_created_customer_to_ipos($customer_id, $new_customer_data, $password_generated) {
 		$user = new WP_User($user_id);
