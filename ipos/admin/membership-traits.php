@@ -199,7 +199,50 @@ trait MembershipTraits
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info()
   {
-    return 'This is a test shortcode';
+    $api_key = get_option('woo_ipos_api_key_setting');
+    $pos_parent = get_option('woo_ipos_pos_parent_setting');
+    $current_user = wp_get_current_user();
+    $current_user_login = $current_user->user_login;
+
+    $get_member_info_url = 'membership_detail';
+    $get_member_info_method = 'GET';
+    $query_params = array(
+      'access_token' => $api_key,
+      'pos_parent' => $pos_parent,
+      'user_id' => $current_user_login
+    );
+
+    $response = $this->call_api($get_member_info_url, $get_member_info_method, array('Content-Type: application/json'), "", $query_params);
+
+    error_log('--------RESPONSE---------' . print_r($response->data, true));
+    //return $response->data as json 
+    $customer = $response->data;
+    $html = "
+    <div id=\"woo-ipos-info-container\" class=\"woo-ipos-info-container\">
+      <div id=\"woo-ipos-info-username-container\">
+        <div id=\"woo-ipos-info-username-label\">Tài khoản</div>
+        <div id=\"woo-ipos-info-username-value\">{$current_user_login}</div>
+      </div>
+      <div id=\"woo-ipos-info-customer-name-container\">
+        <div id=\"woo-ipos-info-customer-name-label\">Tên khách hàng: </div>
+        <div id=\"woo-ipos-info-customer-name-value\">{$customer->name}</div>
+      </div>
+      <div id=\"woo-ipos-info-birthday-container\">
+        <div id=\"woo-ipos-info-birthday-label\">Ngày sinh: </div>
+        <div id=\"woo-ipos-info-birthday-value\">{$customer->birthday}</div>
+      </div>
+      <div id=\"woo-ipos-info-membership-type-container\">
+        <div id=\"woo-ipos-info-membership-type-label\">Loại thành viên: </div>
+        <div id=\"woo-ipos-info-membership-type-value\">{$customer->membership_type_name}</div>
+      </div>
+    
+      <div id=\"woo-ipos-info-point-container\">
+        <div id=\"woo-ipos-info-point-label\">Điểm tích lũy: </div>
+        <div id=\"woo-ipos-info-point-value\">{$customer->point}</div>
+      </div>
+    </div>
+    ";
+    return $html;
   }
 
   // SYNCING CREATED CUSTOMER TO IPOS
