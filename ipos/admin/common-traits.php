@@ -136,4 +136,10 @@ trait CommonTraits
 
     return $decoded_response;
   }
+
+  function convert_date_format($dateString)
+  {
+    $dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $dateString);
+    return $dateTime->format('d/m/Y');
+  }
 }

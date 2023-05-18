@@ -245,6 +245,28 @@ trait MembershipTraits
     return $html;
   }
 
+  //SHORTCODE FOR DISPLAYING VOUCHERS
+  public function display_vouchers_info()
+  {
+    $api_key = get_option('woo_ipos_api_key_setting');
+    $pos_parent = get_option('woo_ipos_pos_parent_setting');
+    $current_user = wp_get_current_user();
+    $current_user_login = $current_user->user_login;
+
+    $get_member_vouchers_url = 'member_vouchers';
+    $get_member_vouchers_method = 'GET';
+
+    $query_params = array(
+      'access_token' => $api_key,
+      'pos_parent' => $pos_parent,
+      'user_id' => $current_user_login
+    );
+
+    $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
+    error_log('--------RESPONSE---------' . print_r($response->data, true));
+  }
+
+
   // SYNCING CREATED CUSTOMER TO IPOS
   public function sync_created_customer_to_ipos($customer_id, $new_customer_data, $password_generated)
   {
