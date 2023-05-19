@@ -263,7 +263,22 @@ trait MembershipTraits
     );
 
     $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
+    $data = $response->data;
+
+    $currentDate = new DateTime();
+    $filteredData = array_filter($data, function ($item) use ($currentDate) {
+      $endDate = new DateTime($item->date_end);
+      return $endDate >= $currentDate; // Keep items with a date_end value greater than or equal to the current date
+    });
+
+    // Sort the filtered data based on the closest expiry date
+    usort($filteredData, function ($a, $b) {
+      $endDateA = new DateTime($a->date_end);
+      $endDateB = new DateTime($b->date_end);
+      return $endDateA <=> $endDateB; // Compare the expiry dates
+    });
     error_log('--------RESPONSE---------' . print_r($response->data, true));
+    return json_encode($filteredData);
   }
 
 
