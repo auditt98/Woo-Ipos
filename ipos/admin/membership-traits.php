@@ -316,149 +316,66 @@ trait MembershipTraits
     error_log('--------RESPONSE---------' . print_r($response->data, true));
     //return $response->data as json 
     $customer = $response->data;
-    $html = "
-      <div class=\"card\">
-        <div class=\"img-avatar\">
-          <img src=\"https://pic.onlinewebfonts.com/svg/img_508630.png\" />
-        </div>
-        <div class=\"card-text\">
-          <div class=\"portada\">
-        </div>
-        
-        <div class=\"title-total\">   
-          <div id=\"woo-ipos-info-username-container\">
-            <div id=\"woo-ipos-info-username-label\">Tài khoản</div>
-            <div id=\"woo-ipos-info-username-value\">{$current_user_login}</div>
-          </div>
-          <div class=\"title\">$current_user_login</div>
-          <h2>$customer->name</h2>
-          <div class=\"desc\">Morgan has collected ants since they were six years old and now has many dozen ants but none in their pants.</div>
-        </div>
-      </div>";
+    // $customer->name
+    $html = "";
+    if (is_user_logged_in()) {
+      $customer_name = !empty($customer->name) ? $customer->name : "Chưa có thông tin";
+      $customer_membership_type = !empty($customer->membership_type_name) ? $customer->membership_type_name : "Chưa có thông tin";
+      $customer_point = $customer->point;
+      $customer_birthday = !empty($customer->birthday) ? $this->convert_date_format($customer->birthday) : "Chưa có thông tin";
+      $html =
+        "<table class=\"user-table\">"
+        .
+        "<tr>
+          <td>Họ tên</td>
+          <td>$customer_name</td>
+        </tr>"
+        .
+        "<tr>
+          <td>Số điện thoại</td>
 
+          <td>$current_user_login</td>
+        </tr>"
+        .
+        "<tr>
+          <td>Loại hội viên</td>
+          <td>$customer_membership_type</td>
+        </tr>"
+        .
+        "<tr>
+          <td>Điểm thành viên</td>
+          <td>$customer_point</td>
+        </tr>"
+        .
+        "<tr>
+          <td>Ngày sinh</td>
+          <td>$customer_birthday</td>
+        </tr>"
+        . "</table>";
+    }
 
   ?>
     <style>
-      .card {
-        background: #fff;
-        border-radius: 4px;
-        box-shadow: 0px 14px 80px rgba(34, 35, 58, 0.5);
-        max-width: 400px;
-        display: flex;
-        flex-direction: row;
-        border-radius: 25px;
-        position: relative;
-      }
-
-      .card h2 {
-        margin: 0;
-        padding: 0 1rem;
-      }
-
-      .card .title {
-        padding: 1rem;
-        text-align: right;
-        color: green;
-        font-weight: bold;
-        font-size: 12px;
-      }
-
-      .card .desc {
-        padding: 0.5rem 1rem;
-        font-size: 12px;
-      }
-
-      .card .actions {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        align-items: center;
-        padding: 0.5rem 1rem;
-      }
-
-      .card svg {
-        width: 85px;
-        height: 85px;
-        margin: 0 auto;
-      }
-
-      .img-avatar {
-        width: 80px;
-        height: 80px;
-        position: absolute;
-        border-radius: 50%;
-        border: 6px solid white;
-        background-image: linear-gradient(-60deg, #16a085 0%, #f4d03f 100%);
-        top: 15px;
-        left: 85px;
-      }
-
-      .card-text {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-      }
-
-      .title-total {
-        padding: 2.5em 1.5em 1.5em 1.5em;
-      }
-
-      path {
-        fill: white;
-      }
-
-      .img-portada {
+      .user-table {
+        border-collapse: collapse;
         width: 100%;
+        border: 1px solid #f5f5f5;
       }
 
-      .portada {
-        width: 100%;
-        height: 100%;
-        border-top-left-radius: 20px;
-        border-bottom-left-radius: 20px;
-        background-image: url("https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2022/09/03195337/DSC07846-1-1024x683.png");
-        background-position: bottom center;
-        background-size: cover;
+      .user-table td {
+        padding: 10px !important;
+        border: 1px solid #e2e2e2;
       }
 
-      button {
-        border: none;
-        background: none;
-        font-size: 24px;
-        color: #8bc34a;
-        cursor: pointer;
-        transition: 0.5s;
+      .user-table tr {
+        background-color: white;
+      }
 
-        &:hover {
-          color: #4caf50;
-          transform: rotate(22deg);
-        }
+      .user-table tr:hover {
+        background-color: #e2e2e2;
       }
     </style>
 <?php
-    // $html = "
-    // <div id=\"woo-ipos-info-container\" class=\"woo-ipos-info-container\">
-    //   <div id=\"woo-ipos-info-username-container\">
-    //     <div id=\"woo-ipos-info-username-label\">Tài khoản</div>
-    //     <div id=\"woo-ipos-info-username-value\">{$current_user_login}</div>
-    //   </div>
-    //   <div id=\"woo-ipos-info-customer-name-container\">
-    //     <div id=\"woo-ipos-info-customer-name-label\">Tên khách hàng: </div>
-    //     <div id=\"woo-ipos-info-customer-name-value\">{$customer->name}</div>
-    //   </div>
-    //   <div id=\"woo-ipos-info-birthday-container\">
-    //     <div id=\"woo-ipos-info-birthday-label\">Ngày sinh: </div>
-    //     <div id=\"woo-ipos-info-birthday-value\">{$customer->birthday}</div>
-    //   </div>
-    //   <div id=\"woo-ipos-info-membership-type-container\">
-    //     <div id=\"woo-ipos-info-membership-type-label\">Loại thành viên: </div>
-    //     <div id=\"woo-ipos-info-membership-type-value\">{$customer->membership_type_name}</div>
-    //   </div>
-
-    //   <div id=\"woo-ipos-info-point-container\">
-    //     <div id=\"woo-ipos-info-point-label\">Điểm tích lũy: </div>
-    //     <div id=\"woo-ipos-info-point-value\">{$customer->point}</div>
-    //   </div>
-    // </div>
-    // ";
     return $html;
   }
 

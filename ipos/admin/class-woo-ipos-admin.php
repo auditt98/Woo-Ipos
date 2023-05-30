@@ -73,5 +73,19 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_login_form_start', array($this, 'customize_woo_login_form'));
 		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
 		add_shortcode('woo_ipos_customer_vouchers', array($this, 'display_vouchers_info'));
+
+		// Add CSS class for logged in and logged out users
+		add_filter('body_class', array($this, 'er_logged_in_filter'));
+	}
+
+	function er_logged_in_filter($classes)
+	{
+		if (is_user_logged_in()) {
+			$classes[] = 'logged-in-condition';
+		} else {
+			$classes[] = 'logged-out-condition';
+		}
+		// return the $classes array
+		return $classes;
 	}
 }
