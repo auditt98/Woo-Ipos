@@ -313,11 +313,11 @@ trait MembershipTraits
 
     $response = $this->call_api($get_member_info_url, $get_member_info_method, array('Content-Type: application/json'), "", $query_params);
 
-    error_log('--------RESPONSE---------' . print_r($response->data, true));
     //return $response->data as json 
     $customer = $response->data;
     // $customer->name
     $html = "";
+    error_log('--------CUSTOMER---------' . print_r($customer, true));
     if (is_user_logged_in()) {
       $customer_name = !empty($customer->name) ? $customer->name : "Chưa có thông tin";
       $customer_membership_type = !empty($customer->membership_type_name) ? $customer->membership_type_name : "Chưa có thông tin";
@@ -444,7 +444,6 @@ trait MembershipTraits
       $endDateB = new DateTime($b->date_end);
       return $endDateA <=> $endDateB; // Compare the expiry dates
     });
-    error_log('--------RESPONSE---------' . print_r($response->data, true));
     $html = "<div id=\"woo-ipos-voucher-container\">
       <div class=\"woo-ipos-voucher-item\">
         <div class=\"woo-ipos-voucher-item-code-container\">
@@ -505,6 +504,34 @@ trait MembershipTraits
     } else {
       // Error creating user, handle the error here
       return "Error creating user";
+    }
+  }
+
+  public function customer_import($data)
+  {
+    // create wordpress user here
+    $all_data = $data["data"];
+    error_log(print_r($all_data, true));
+    foreach ($all_data as $customer) {
+
+      $email = $customer["phone_number"] . '@gmail.com';
+      $password = $customer["phone_number"];
+      $username = $customer["phone_number"];
+      $user_id = wp_create_user($username, $password, $email);
+      // Check if user creation was successful
+      if (!is_wp_error($user_id)) {
+        // User created successfully, update the role of the user to customer
+        $user = new WP_User($user_id);
+        $user->set_role('customer');
+        update_user_meta($user_id, 'billing_phone', $customer["phone_number"]);
+        update_user_meta($user_id, 'shipping_phone', $customer["phone_number"]);
+        update_user_meta($user_id, 'display_name', $customer["name"]);
+        // return the data
+        $customer['user_id'] = $user_id;
+      } else {
+        // Error creating user, skip
+        continue;
+      }
     }
   }
 }

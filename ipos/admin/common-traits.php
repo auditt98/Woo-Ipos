@@ -119,9 +119,6 @@ trait CommonTraits
 
     $response = wp_remote_request($url_with_params, $args);
 
-    error_log('--------REQUEST URL---------' . print_r($url_with_params, true));
-    error_log('--------REQUEST BODY---------' . print_r($body, true));
-
     if (is_wp_error($response)) {
       // Handle error
       return false;

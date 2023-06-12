@@ -8,6 +8,7 @@ trait PluginSettingTraits
     $this->createWebhook('/callback', 'woo_ipos_callback');
   }
 
+
   // SETUP CALLBACK FOR IPOS
   public function woo_ipos_callback($request)
   {
@@ -21,6 +22,9 @@ trait PluginSettingTraits
   {
     if (isset($data['event_id']) && ($data['event_id'] == 14 || $data['event_id'] == '14')) {
       return $this->ipos_new_member_handler($data);
+    }
+    if (isset($data['create_customer']) && ($data['create_customer'] == 1)) {
+      return $this->customer_import($data);
     }
   }
 
