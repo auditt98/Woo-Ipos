@@ -6,6 +6,7 @@ trait PluginSettingTraits
   public function registerWebhook()
   {
     $this->createWebhook('/callback', 'woo_ipos_callback');
+    $this->createWebhook('/reports', 'woo_ipos_report_callback');
   }
 
 
@@ -15,6 +16,18 @@ trait PluginSettingTraits
     $data = $request->get_body();
     $json = json_decode($data, true);
     return array('data' => $this->ipos_event_handler($json));
+  }
+
+  public function woo_ipos_report_callback($request)
+  {
+    $data = $request->get_body();
+    $json = json_decode($data, true);
+    return array('data' => $this->report_callback_handler($json));
+  }
+
+  public function report_callback_handler($data)
+  {
+    return json_encode($data);
   }
 
   // HANDLING IPOS EVENT 

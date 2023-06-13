@@ -196,104 +196,6 @@ trait MembershipTraits
     }
   }
 
-  function get_custom_css()
-  {
-    $css = '
-  .card {
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0px 14px 80px rgba(34, 35, 58, 0.5);
-    max-width: 400px;
-    display: flex;
-    flex-direction: row;
-    border-radius: 25px;
-    position: relative;
-  }
-  .card h2 {
-    margin: 0;
-    padding: 0 1rem;
-  }
-  .card .title {
-    padding: 1rem;
-    text-align: right;
-    color: green;
-    font-weight: bold;
-    font-size: 12px;
-  }
-  .card .desc {
-    padding: 0.5rem 1rem;
-    font-size: 12px;
-  }
-  .card .actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    align-items: center;
-    padding: 0.5rem 1rem;
-  }
-  .card svg {
-    width: 85px;
-    height: 85px;
-    margin: 0 auto;
-  }
-  
-  .img-avatar {
-    width: 80px;
-    height: 80px;
-    position: absolute;
-    border-radius: 50%;
-    border: 6px solid white;
-    background-image: linear-gradient(-60deg, #16a085 0%, #f4d03f 100%);
-    top: 15px;
-    left: 85px;
-  }
-  
-  .card-text {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-  }
-  
-  .title-total {
-    padding: 2.5em 1.5em 1.5em 1.5em;
-  }
-  
-  path {
-    fill: white;
-  }
-  
-  .img-portada {
-    width: 100%;
-  }
-  
-  .portada {
-    width: 100%;
-    height: 100%;
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
-    background-image: url("https://m.media-amazon.com/images/S/aplus-media/vc/cab6b08a-dd8f-4534-b845-e33489e91240._CR75,0,300,300_PT0_SX300__.jpg");
-    background-position: bottom center;
-    background-size: cover;
-  }
-  
-  button {
-    border: none;
-    background: none;
-    font-size: 24px;
-    color: #8bc34a;
-    cursor: pointer;
-    transition: 0.5s;
-  }
-  button:hover {
-    color: #4caf50;
-    transform: rotate(22deg);
-  }
-  woo-ipos-info-username-container{
-    display: flex;
-  }
-  
-  ';
-
-    return $css;
-  }
 
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info()
@@ -375,41 +277,70 @@ trait MembershipTraits
         background-color: #e2e2e2;
       }
     </style>
-<?php
+  <?php
     return $html;
   }
 
   public function format_voucher_text($voucher)
   {
-    $voucher_code = $voucher->code;
-    $voucher_discount_description = $voucher->discount_description;
+    $voucher_code = $voucher->voucher_code;
+    //end date
     $voucher_date_end = $voucher->date_end;
-    $voucher_discount_value = $voucher->discount_value;
-    $voucher_discount_type = $voucher->discount_type;
-    $voucher_discount_type_text = $voucher_discount_type == 'percent' ? '%' : 'đ';
-    $voucher_discount_value_text = $voucher_discount_type == 'percent' ? $voucher_discount_value : number_format($voucher_discount_value, 0, ',', '.') . 'đ';
     $voucher_date_end_text = date('d/m/Y', strtotime($voucher_date_end));
-    $voucher_code_text = $voucher_code;
-    $voucher_discount_description_text = $voucher_discount_description;
-    $html = "
-    <div id=\"woo-ipos-voucher-container\">
-      <div class=\"woo-ipos-voucher-item\">
-        <div class=\"woo-ipos-voucher-item-code-container\">
-          <div class=\"woo-ipos-voucher-item-code-label\">Mã giảm giá</div>
-          <div class=\"woo-ipos-voucher-item-code-value\">{$voucher_code_text}</div>
-          <div class=\"woo-ipos-voucher-item-code-copy\">Sao chép</div>
-        </div>
-        <div class=\"woo-ipos-voucher-date-end\">HSD: {$voucher_date_end_text}</div>
-        <div class=\"woo-ipos-voucher-discount-info-container\">
-          <div class=\"woo-ipos-voucher-discount-description-container\">
-            <div class=\"woo-ipos-voucher-discount-description-label\">{$voucher_discount_description_text}</div>
-            <div class=\"woo-ipos-voucher-discount-description-value\">{$voucher_discount_value_text}{$voucher_discount_type_text}</div>
-          </div>
-        </div>
+    //amount and percentage
+    $discount_amount = $voucher->discount_amount;
+    $discount_extra = $voucher->discount_extra;
+    $discount_value = $discount_amount == '0' ? $discount_extra : $discount_amount;
+    $voucher_discount_type = $discount_amount == '0' ? '%' : 'đ';
+    $voucher_discount_value_text = number_format($discount_value, 0, ',', '.') . $voucher_discount_type;
+
+    $discount_max_amount = $voucher->discount_max;
+    $discount_max_type = $discount_amount == '0' ? 'đ' : '%';
+    $voucher_discount_max_text = $discount_max_type == 'đ' ? number_format($discount_amount * 100, 0, ',', '.') : number_format($discount_max_amount, 0, ',', '.') . $discount_max_type;
+
+    $order_over = $voucher->amount_order_over;
+  ?>
+    <div class="woo-ipos-voucher-item flex flex-row justify-around">
+      <div class="woo-ipos-voucher-item-code-container flex flex-column">
+        <div class="woo-ipos-voucher-item-code-label">Mã giảm giá: <?php echo $voucher_code ?></div>
+        <div class="woo-ipos-voucher-item-code-label">HSD: <?php echo $voucher_date_end_text ?></div>
+        <div class="woo-ipos-voucher-discount-description-value">Giảm giá: <?php echo $voucher_discount_value_text ?></div>
+        <div class="woo-ipos-voucher-discount-description-value">Giảm tối đa: <?php echo $voucher_discount_max_text ?></div>
+        <div class="woo-ipos-voucher-discount-description-value">Áp dụng cho đơn hàng trên: <?php echo number_format($order_over, 0, ',', '.') ?>đ</div>
       </div>
+      <div class="woo-ipos-voucher-item-code-copy flex flex-column" onclick="copyToClipboard('<?php echo $voucher_code ?>')"><img width="16" height="16" src="https://img.icons8.com/ios/50/copy--v1.png" alt="copy--v1" /></div>
+
+
     </div>
-    ";
-    return $html;
+    <style>
+      .flex {
+        display: flex;
+      }
+
+      .justify-around {
+        justify-content: space-around;
+      }
+
+      .flex-row {
+        flex-direction: row;
+      }
+
+      .flex-column {
+        flex-direction: column;
+      }
+
+      .justify-center {
+        justify-content: center;
+      }
+
+      .items-center {
+        align-items: center;
+      }
+    </style>
+    <script>
+
+    </script>
+<?php
   }
 
   //SHORTCODE FOR DISPLAYING VOUCHERS
@@ -431,7 +362,6 @@ trait MembershipTraits
 
     $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
     $data = $response->data;
-    return json_encode($response->data);
     $currentDate = new DateTime();
     $filteredData = array_filter($data, function ($item) use ($currentDate) {
       $endDate = new DateTime($item->date_end);
@@ -444,23 +374,12 @@ trait MembershipTraits
       $endDateB = new DateTime($b->date_end);
       return $endDateA <=> $endDateB; // Compare the expiry dates
     });
-    $html = "<div id=\"woo-ipos-voucher-container\">
-      <div class=\"woo-ipos-voucher-item\">
-        <div class=\"woo-ipos-voucher-item-code-container\">
-          <div class=\"woo-ipos-voucher-item-code-label\"></div>
-          <div class=\"woo-ipos-voucher-item-code-value\"></div>
-          <div class=\"woo-ipos-voucher-item-code-copy\"></div>
-        </div>
-        <div class=\"woo-ipos-voucher-date-end\"></div>
-        <div class=\"woo-ipos-voucher-discount-info-container\">
-          <div class=\"woo-ipos-voucher-discount-description-container\">
-            <div class=\"woo-ipos-voucher-discount-description-label\"></div>
-            <div class=\"woo-ipos-voucher-discount-description-value\"></div>
-          </div>
-        </div>
-      </div>
-    </div>";
-    return json_encode($filteredData);
+    $html = "<div id=\"woo-ipos-voucher-container\">";
+    foreach ($filteredData as $voucher) {
+      $html .= $this->format_voucher_text($voucher);
+    }
+    $html .= "</div>";
+    return $html;
   }
 
 
