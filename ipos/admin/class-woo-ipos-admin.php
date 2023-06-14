@@ -23,12 +23,14 @@
 require_once 'membership-traits.php';
 require_once 'common-traits.php';
 require_once 'plugin-setting-traits.php';
+require_once 'report-traits.php';
 
 class Woo_Ipos_Admin
 {
 	use CommonTraits;
 	use PluginSettingTraits;
 	use MembershipTraits;
+	use ReportTraits;
 
 	/**
 	 * The ID of this plugin.

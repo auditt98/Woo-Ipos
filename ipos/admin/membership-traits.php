@@ -296,11 +296,17 @@ trait MembershipTraits
 
     $discount_max_amount = $voucher->discount_max;
     $discount_max_type = $discount_amount == '0' ? 'đ' : '%';
-    $voucher_discount_max_text = $discount_max_type == 'đ' ? number_format($discount_amount * 100, 0, ',', '.') : number_format($discount_max_amount, 0, ',', '.') . $discount_max_type;
+
+    $voucher_discount_max_text = '';
+    if ($discount_max_type == 'đ') {
+      $voucher_discount_max_text = number_format($discount_max_amount, 0, ',', '.') . $discount_max_type;
+    } else {
+      $voucher_discount_max_text = number_format($discount_max_amount  * 100, 0, ',', '.') . $discount_max_type;
+    }
 
     $order_over = $voucher->amount_order_over;
   ?>
-    <div class="woo-ipos-voucher-item flex flex-row justify-around">
+    <div class="woo-ipos-voucher-item flex flex-row justify-around" style="">
       <div class="woo-ipos-voucher-item-code-container flex flex-column">
         <div class="woo-ipos-voucher-item-code-label">Mã giảm giá: <?php echo $voucher_code ?></div>
         <div class="woo-ipos-voucher-item-code-label">HSD: <?php echo $voucher_date_end_text ?></div>
@@ -308,11 +314,28 @@ trait MembershipTraits
         <div class="woo-ipos-voucher-discount-description-value">Giảm tối đa: <?php echo $voucher_discount_max_text ?></div>
         <div class="woo-ipos-voucher-discount-description-value">Áp dụng cho đơn hàng trên: <?php echo number_format($order_over, 0, ',', '.') ?>đ</div>
       </div>
-      <div class="woo-ipos-voucher-item-code-copy flex flex-column" onclick="copyToClipboard('<?php echo $voucher_code ?>')"><img width="16" height="16" src="https://img.icons8.com/ios/50/copy--v1.png" alt="copy--v1" /></div>
-
+      <div class="woo-ipos-voucher-item-code-copy flex flex-column justify-center" onclick="copyToClipboard('<?php echo $voucher_code ?>')">
+        <div class="flex flex-row items-center justify-center gap-10px"><span>Sao chép</span> <img width="18" height="18" style="" src="https://img.icons8.com/ios/50/copy--v1.png" alt="copy--v1" /></div>
+      </div>
 
     </div>
     <style>
+      .gap-10px {
+        gap: 10px;
+      }
+
+      .woo-ipos-voucher-item {
+        box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin-bottom: 50px;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .woo-ipos-voucher-item:hover {
+        box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+      }
+
       .flex {
         display: flex;
       }
@@ -350,7 +373,9 @@ trait MembershipTraits
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
     $current_user = wp_get_current_user();
     $current_user_login = $current_user->user_login;
-
+    if (!is_user_logged_in()) {
+      return "";
+    }
     $get_member_vouchers_url = 'member_vouchers';
     $get_member_vouchers_method = 'GET';
 
@@ -367,6 +392,11 @@ trait MembershipTraits
       $endDate = new DateTime($item->date_end);
       return $endDate >= $currentDate; // Keep items with a date_end value greater than or equal to the current date
     });
+
+    //if no voucher
+    if (empty($filteredData)) {
+      return "<div class=\"woo-ipos-voucher-container\">Bạn chưa có mã giảm giá nào</div>";
+    }
 
     // Sort the filtered data based on the closest expiry date
     usort($filteredData, function ($a, $b) {

@@ -24,6 +24,7 @@
     do_settings_sections('woo_ipos_general_settings');
     ?>
     <div>Callback urls: <?php echo home_url('/wp-json/woo-ipos/v1/callback'); ?></div>
+    <div>Report urls: <?php echo home_url('/wp-json/woo-ipos/v1/reports'); ?></div>
     <?php submit_button(); ?>
   </form>
 </div>

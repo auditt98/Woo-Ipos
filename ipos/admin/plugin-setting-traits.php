@@ -18,18 +18,6 @@ trait PluginSettingTraits
     return array('data' => $this->ipos_event_handler($json));
   }
 
-  public function woo_ipos_report_callback($request)
-  {
-    $data = $request->get_body();
-    $json = json_decode($data, true);
-    return array('data' => $this->report_callback_handler($json));
-  }
-
-  public function report_callback_handler($data)
-  {
-    return json_encode($data);
-  }
-
   // HANDLING IPOS EVENT 
   public function ipos_event_handler($data)
   {

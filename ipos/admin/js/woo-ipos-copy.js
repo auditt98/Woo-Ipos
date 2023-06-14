@@ -5,5 +5,5 @@ function copyToClipboard(text) {
   textarea.select();
   document.execCommand('copy');
   document.body.removeChild(textarea);
-  alert('The code has been copied to the clipboard.');
+  alert('Mã giảm giá đã được copy vào clipboard');
 }
