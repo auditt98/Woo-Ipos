@@ -22,6 +22,7 @@ trait CommonTraits
       // Page on which to add this section of options
       'woo_ipos_general_settings'
     );
+
     unset($args);
     unset($callback_args);
     unset($pos_parent_args);
@@ -59,6 +60,83 @@ trait CommonTraits
       'wp_data' => 'option'
     );
 
+    $ga_project_id_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_project_id_setting',
+      'name' => 'woo_ipos_ga_project_id_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    $ga_client_x509_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_client_x509_setting',
+      'name' => 'woo_ipos_ga_client_x509_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    $ga_private_key_id_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_private_key_id_setting',
+      'name' => 'woo_ipos_ga_private_key_id_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    $ga_private_key_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_private_key_setting',
+      'name' => 'woo_ipos_ga_private_key_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    $ga_client_email_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_client_email_setting',
+      'name' => 'woo_ipos_ga_client_email_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+    
+    $ga_client_id_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_client_id_setting',
+      'name' => 'woo_ipos_ga_client_id_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    $ga_property_id_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_property_id_setting',
+      'name' => 'woo_ipos_ga_property_id_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
     add_settings_field(
       'woo_ipos_modify_registration_setting',
       'Modify Woocommerce Registration form to require phone number instead of email',
@@ -86,6 +164,67 @@ trait CommonTraits
       $args
     );
 
+    add_settings_field(
+      'woo_ipos_ga_project_id_setting',
+      'GA Project ID',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_project_id_args
+    );
+    add_settings_field(
+      'woo_ipos_ga_client_x509_setting',
+      'GA Client_x509 Cert URL',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_client_x509_args
+    );
+
+    add_settings_field(
+      'woo_ipos_ga_private_key_id_setting',
+      'GA Private Key ID',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_private_key_id_args
+    );
+
+    add_settings_field(
+      'woo_ipos_ga_private_key_setting',
+      'GA Private Key',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_private_key_args
+    );
+
+    add_settings_field(
+      'woo_ipos_ga_client_email_setting',
+      'GA Client Email',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_client_email_args
+    );
+    
+    add_settings_field(
+      'woo_ipos_ga_client_id_setting',
+      'GA Client Id',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_client_id_args
+    );
+
+    add_settings_field(
+      'woo_ipos_ga_property_id_setting',
+      'GA Property ID',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_property_id_args
+    );
 
     register_setting(
       'woo_ipos_general_settings',
@@ -101,6 +240,42 @@ trait CommonTraits
       'woo_ipos_general_settings',
       'woo_ipos_modify_registration_setting',
     );
+    
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_project_id_setting',
+    );   
+
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_client_x509_setting',
+    );
+
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_private_key_id_setting',
+    );
+    
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_private_key_setting',
+    );
+    
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_client_email_setting',
+    );
+    
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_client_id_setting',
+    );
+
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_property_id_setting',
+    );
+    
   }
 
   // COMMON FUNCTION TO CALL API

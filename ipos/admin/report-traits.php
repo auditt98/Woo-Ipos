@@ -1,9 +1,52 @@
 <?php
+require_once __DIR__ . '/google-api-php-client/vendor/autoload.php';
+
+use Google_Client;
 
 trait ReportTraits
 {
   public function get_woocommerce_report($json)
   {
+    $jsonKey = [
+      'type' => 'service_account',
+      'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
+      'token_uri' => 'https://oauth2.googleapis.com/token',
+      'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
+      'universe_domain' => 'googleapis.com',
+      'project_id' => get_option('woo_ipos_ga_project_id_setting'),
+      'client_x509_cert_url' => get_option('woo_ipos_ga_client_x509_setting'),
+      'private_key_id' => get_option('woo_ipos_ga_private_key_id_setting'),
+      'private_key' => get_option('woo_ipos_ga_private_key_setting'),
+      'client_email' => get_option('woo_ipos_ga_client_email_setting'),
+      'client_id' => get_option('woo_ipos_ga_client_id_setting'),
+    ];
+
+    $client = new Google_Client();
+    $client->setAuthConfig($jsonKey);
+    $client->addScope('https://www.googleapis.com/auth/analytics.readonly');
+    // Create a new service instance for Google Analytics Data API
+    $analyticsData = new Google_Service_AnalyticsData($client);
+    // Replace 'YOUR_PROPERTY_ID' with your GA4 property ID
+    $propertyId = get_option('woo_ipos_ga_property_id_setting');
+    $request = new Google_Service_AnalyticsData_RunReportRequest();
+    $request->setEntity(new Google_Service_AnalyticsData_Entity());
+    $request->setDateRanges([
+      new Google_Service_AnalyticsData_DateRange(['start_date' => '30daysAgo', 'end_date' => 'today'])
+    ]);
+    $request->setMetrics([
+      new Google_Service_AnalyticsData_Metric(['name' => 'activeUsers'])
+    ]);
+    $request->setProperty(new Google_Service_AnalyticsData_Property());
+    $request->getProperty()->setPropertyId($propertyId);
+
+    // Execute the request
+    $response = $analyticsData->properties->runReport($propertyId, $request);
+
+    $userCount = $response->getRows()[0]->getMetricValues()[0]->getValue();
+
+    // Return the total user count
+    return $userCount;
+
     $product_args = array(
       'post_type' => 'product',
       'post_status' => 'publish',
