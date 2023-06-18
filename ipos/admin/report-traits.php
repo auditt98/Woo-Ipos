@@ -1,11 +1,16 @@
 <?php
-require_once __DIR__ . '/google-api-php-client/vendor/autoload.php';
-
-use Google_Client;
+// require_once __DIR__ . '/google-api-php-client/vendor/autoload.php';
+$wp_root_path = ABSPATH;
+require_once $wp_root_path . '/vendor/autoload.php';
+putenv("GOOGLE_APPLICATION_CREDENTIALS=" . __DIR__ . '/credentials.json');
+use Google\Analytics\Data\V1beta\BetaAnalyticsDataClient;
+use Google\Analytics\Data\V1beta\DateRange;
+use Google\Analytics\Data\V1beta\Dimension;
+use Google\Analytics\Data\V1beta\Metric;
 
 trait ReportTraits
 {
-  public function get_woocommerce_report($json)
+  public function get_google_analytics_users()
   {
     $jsonKey = [
       'type' => 'service_account',
@@ -20,32 +25,65 @@ trait ReportTraits
       'client_email' => get_option('woo_ipos_ga_client_email_setting'),
       'client_id' => get_option('woo_ipos_ga_client_id_setting'),
     ];
+    $credentialsPath = __DIR__ . '/credentials.json';
+    $client = new BetaAnalyticsDataClient([
+      'keyFilename' => $credentialsPath
+    ]);
 
-    $client = new Google_Client();
-    $client->setAuthConfig($jsonKey);
-    $client->addScope('https://www.googleapis.com/auth/analytics.readonly');
-    // Create a new service instance for Google Analytics Data API
-    $analyticsData = new Google_Service_AnalyticsData($client);
-    // Replace 'YOUR_PROPERTY_ID' with your GA4 property ID
     $propertyId = get_option('woo_ipos_ga_property_id_setting');
-    $request = new Google_Service_AnalyticsData_RunReportRequest();
-    $request->setEntity(new Google_Service_AnalyticsData_Entity());
-    $request->setDateRanges([
-      new Google_Service_AnalyticsData_DateRange(['start_date' => '30daysAgo', 'end_date' => 'today'])
-    ]);
-    $request->setMetrics([
-      new Google_Service_AnalyticsData_Metric(['name' => 'activeUsers'])
-    ]);
-    $request->setProperty(new Google_Service_AnalyticsData_Property());
-    $request->getProperty()->setPropertyId($propertyId);
 
-    // Execute the request
-    $response = $analyticsData->properties->runReport($propertyId, $request);
+    $dateRange = new DateRange();
+    $dateRange->setStartDate('2023-01-01');
+    $dateRange->setEndDate('2023-06-30');
 
-    $userCount = $response->getRows()[0]->getMetricValues()[0]->getValue();
+    $dimension = new Dimension();
+    $dimension->setName('country');
+
+    $metric = new Metric();
+    $metric->setName('activeUsers');
+
+    $response = $client->runReport([
+      'property' => 'properties/' . $propertyId,
+      'dateRanges' => [$dateRange],
+      'dimensions' => [$dimension],
+      'metrics' => [$metric],
+    ]);
+
+    // Process the response or perform other actions based on your requirements
+    $rows = $response->getRows();
+    foreach ($rows as $row) {
+      $country = $row->getDimensionValues()[0]->getValue();
+      $users = $row->getMetricValues()[0]->getValue();
+
+      // Do something with the country and user count
+      echo "Country: $country, Users: $users\n";
+    }
+  }
+
+  public function get_woocommerce_report($json)
+  {
+    // Create a new service instance for Google Analytics Data API
+    // $analyticsData = new Google_Service_AnalyticsData($client);
+    // // Replace 'YOUR_PROPERTY_ID' with your GA4 property ID
+    // $propertyId = get_option('woo_ipos_ga_property_id_setting');
+    // $request = new Google_Service_AnalyticsData_RunReportRequest();
+    // $request->setEntity(new Google_Service_AnalyticsData_Entity());
+    // $request->setDateRanges([
+    //   new Google_Service_AnalyticsData_DateRange(['start_date' => '30daysAgo', 'end_date' => 'today'])
+    // ]);
+    // $request->setMetrics([
+    //   new Google_Service_AnalyticsData_Metric(['name' => 'activeUsers'])
+    // ]);
+    // $request->setProperty(new Google_Service_AnalyticsData_Property());
+    // $request->getProperty()->setPropertyId($propertyId);
+
+    // // Execute the request
+    // $response = $analyticsData->properties->runReport($propertyId, $request);
+
+    // $userCount = $response->getRows()[0]->getMetricValues()[0]->getValue();
 
     // Return the total user count
-    return $userCount;
+    return $this->get_google_analytics_users();
 
     $product_args = array(
       'post_type' => 'product',
