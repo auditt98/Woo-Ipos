@@ -23,7 +23,21 @@ trait OrderTraits
 
   public function check_voucher_valid()
   {
+    $product = wc_get_product(13831);
+    $datas = [];
 
+    // Get all metadata
+    $metadata = $product->get_meta_data();
+
+    // Loop through each metadata object
+    foreach ($metadata as $meta) {
+      // Get the meta key and value
+      $meta_key = $meta->key;
+      $meta_value = $meta->value;
+
+      array_push($datas, $meta);
+    }
+    return $datas;
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
     $current_user = wp_get_current_user();
@@ -34,7 +48,6 @@ trait OrderTraits
     $query_params = array(
       'access_token' => $api_key,
     );
-    $datas = [];
     // foreach ($meta_data as $meta) {
     //   // Get the meta key and value
     //   $meta_key = $meta->key;
