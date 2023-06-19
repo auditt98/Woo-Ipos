@@ -219,7 +219,6 @@ trait MembershipTraits
     $customer = $response->data;
     // $customer->name
     $html = "";
-    error_log('--------CUSTOMER---------' . print_r($customer, true));
     if (is_user_logged_in()) {
       $customer_name = !empty($customer->name) ? $customer->name : "Chưa có thông tin";
       $customer_membership_type = !empty($customer->membership_type_name) ? $customer->membership_type_name : "Chưa có thông tin";

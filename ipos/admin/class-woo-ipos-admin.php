@@ -24,6 +24,7 @@ require_once 'membership-traits.php';
 require_once 'common-traits.php';
 require_once 'plugin-setting-traits.php';
 require_once 'report-traits.php';
+require_once 'order-traits.php';
 
 class Woo_Ipos_Admin
 {
@@ -31,7 +32,7 @@ class Woo_Ipos_Admin
 	use PluginSettingTraits;
 	use MembershipTraits;
 	use ReportTraits;
-
+	use OrderTraits;
 	/**
 	 * The ID of this plugin.
 	 *
@@ -75,6 +76,7 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_login_form_start', array($this, 'customize_woo_login_form'));
 		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
 		add_shortcode('woo_ipos_customer_vouchers', array($this, 'display_vouchers_info'));
+		add_shortcode('woo_ipos_customer_cart_data', array($this, 'check_voucher_valid'));
 
 		// Add CSS class for logged in and logged out users
 		add_filter('body_class', array($this, 'er_logged_in_filter'));

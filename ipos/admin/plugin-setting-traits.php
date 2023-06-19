@@ -7,6 +7,7 @@ trait PluginSettingTraits
   {
     $this->createWebhook('/callback', 'woo_ipos_callback');
     $this->createWebhook('/reports', 'woo_ipos_report_callback');
+    $this->createWebhook('/test', 'woo_ipos_test_callback');
   }
 
 

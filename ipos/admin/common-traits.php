@@ -72,6 +72,26 @@ trait CommonTraits
       'wp_data' => 'option'
     );
 
+    $ga_property_id_args = array(
+      'type' => 'input',
+      'subtype' => 'text',
+      'id' => 'woo_ipos_ga_property_id_setting',
+      'name' => 'woo_ipos_ga_property_id_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    add_settings_field(
+      'woo_ipos_ga_property_id_setting',
+      'GA Property ID',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $ga_property_id_args
+    );
+
     add_settings_field(
       'woo_ipos_modify_registration_setting',
       'Modify Woocommerce Registration form to require phone number instead of email',
@@ -129,6 +149,11 @@ trait CommonTraits
       [
         'sanitize_callback' => array($this, 'handleUploadedFile'),
       ]
+    );
+
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_ga_property_id_setting',
     );
   }
 
