@@ -1,8 +1,9 @@
 <?php
-// require_once __DIR__ . '/google-api-php-client/vendor/autoload.php';
+$prefix = 'test';
 $wp_root_path = ABSPATH;
 require_once $wp_root_path . '/vendor/autoload.php';
-putenv("GOOGLE_APPLICATION_CREDENTIALS=" . __DIR__ . '/credentials.json');
+putenv("GOOGLE_APPLICATION_CREDENTIALS=" . __DIR__ . '/' . $prefix . '_credentials.json');
+
 use Google\Analytics\Data\V1beta\BetaAnalyticsDataClient;
 use Google\Analytics\Data\V1beta\DateRange;
 use Google\Analytics\Data\V1beta\Dimension;
@@ -12,19 +13,6 @@ trait ReportTraits
 {
   public function get_google_analytics_users()
   {
-    $jsonKey = [
-      'type' => 'service_account',
-      'auth_uri' => 'https://accounts.google.com/o/oauth2/auth',
-      'token_uri' => 'https://oauth2.googleapis.com/token',
-      'auth_provider_x509_cert_url' => 'https://www.googleapis.com/oauth2/v1/certs',
-      'universe_domain' => 'googleapis.com',
-      'project_id' => get_option('woo_ipos_ga_project_id_setting'),
-      'client_x509_cert_url' => get_option('woo_ipos_ga_client_x509_setting'),
-      'private_key_id' => get_option('woo_ipos_ga_private_key_id_setting'),
-      'private_key' => get_option('woo_ipos_ga_private_key_setting'),
-      'client_email' => get_option('woo_ipos_ga_client_email_setting'),
-      'client_id' => get_option('woo_ipos_ga_client_id_setting'),
-    ];
     $credentialsPath = __DIR__ . '/credentials.json';
     $client = new BetaAnalyticsDataClient([
       'keyFilename' => $credentialsPath
@@ -36,55 +24,27 @@ trait ReportTraits
     $dateRange->setStartDate('2023-01-01');
     $dateRange->setEndDate('2023-06-30');
 
-    $dimension = new Dimension();
-    $dimension->setName('country');
-
     $metric = new Metric();
     $metric->setName('activeUsers');
 
     $response = $client->runReport([
       'property' => 'properties/' . $propertyId,
       'dateRanges' => [$dateRange],
-      'dimensions' => [$dimension],
       'metrics' => [$metric],
     ]);
 
     // Process the response or perform other actions based on your requirements
     $rows = $response->getRows();
+    $userCount = 0;
     foreach ($rows as $row) {
-      $country = $row->getDimensionValues()[0]->getValue();
       $users = $row->getMetricValues()[0]->getValue();
-
-      // Do something with the country and user count
-      echo "Country: $country, Users: $users\n";
+      $userCount += $users;
     }
+    return $userCount;
   }
 
-  public function get_woocommerce_report($json)
+  public function get_woocommerce_report()
   {
-    // Create a new service instance for Google Analytics Data API
-    // $analyticsData = new Google_Service_AnalyticsData($client);
-    // // Replace 'YOUR_PROPERTY_ID' with your GA4 property ID
-    // $propertyId = get_option('woo_ipos_ga_property_id_setting');
-    // $request = new Google_Service_AnalyticsData_RunReportRequest();
-    // $request->setEntity(new Google_Service_AnalyticsData_Entity());
-    // $request->setDateRanges([
-    //   new Google_Service_AnalyticsData_DateRange(['start_date' => '30daysAgo', 'end_date' => 'today'])
-    // ]);
-    // $request->setMetrics([
-    //   new Google_Service_AnalyticsData_Metric(['name' => 'activeUsers'])
-    // ]);
-    // $request->setProperty(new Google_Service_AnalyticsData_Property());
-    // $request->getProperty()->setPropertyId($propertyId);
-
-    // // Execute the request
-    // $response = $analyticsData->properties->runReport($propertyId, $request);
-
-    // $userCount = $response->getRows()[0]->getMetricValues()[0]->getValue();
-
-    // Return the total user count
-    return $this->get_google_analytics_users();
-
     $product_args = array(
       'post_type' => 'product',
       'post_status' => 'publish',
@@ -151,7 +111,7 @@ trait ReportTraits
       }
     }
     $newObject = [
-      "soLuongTruyCap" => 0,
+      "soLuongTruyCap" => $this->get_google_analytics_users(),
       "soNguoiBan" => 1,
       "soNguoiBanMoi" => 1,
       "tongSoSanPham" => $product_count,
@@ -168,8 +128,6 @@ trait ReportTraits
 
   public function woo_ipos_report_callback($request)
   {
-    $data = $request->get_body();
-    $json = json_decode($data, true);
-    return array('data' => $this->get_woocommerce_report($json));
+    return array('data' => $this->get_woocommerce_report());
   }
 }

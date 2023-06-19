@@ -284,6 +284,7 @@ trait MembershipTraits
   public function format_voucher_text($voucher)
   {
     $voucher_code = $voucher->voucher_code;
+    $voucher_campaign = $voucher->voucher_campaign_name;
     //end date
     $voucher_date_end = $voucher->date_end;
     $voucher_date_end_text = date('d/m/Y', strtotime($voucher_date_end));
@@ -308,11 +309,12 @@ trait MembershipTraits
   ?>
     <div class="woo-ipos-voucher-item flex flex-row justify-around" style="">
       <div class="woo-ipos-voucher-item-code-container flex flex-column">
+        <div class="woo-ipos-voucher-item-code-label"><?php echo $voucher_campaign ?></div>
         <div class="woo-ipos-voucher-item-code-label">Mã giảm giá: <?php echo $voucher_code ?></div>
         <div class="woo-ipos-voucher-item-code-label">HSD: <?php echo $voucher_date_end_text ?></div>
-        <div class="woo-ipos-voucher-discount-description-value">Giảm giá: <?php echo $voucher_discount_value_text ?></div>
+        <!-- <div class="woo-ipos-voucher-discount-description-value">Giảm giá: <?php echo $voucher_discount_value_text ?></div>
         <div class="woo-ipos-voucher-discount-description-value">Giảm tối đa: <?php echo $voucher_discount_max_text ?></div>
-        <div class="woo-ipos-voucher-discount-description-value">Áp dụng cho đơn hàng trên: <?php echo number_format($order_over, 0, ',', '.') ?>đ</div>
+        <div class="woo-ipos-voucher-discount-description-value">Áp dụng cho đơn hàng trên: <?php echo number_format($order_over, 0, ',', '.') ?>đ</div> -->
       </div>
       <div class="woo-ipos-voucher-item-code-copy flex flex-column justify-center" onclick="copyToClipboard('<?php echo $voucher_code ?>')">
         <div class="flex flex-row items-center justify-center gap-10px"><span>Sao chép</span> <img width="18" height="18" style="" src="https://img.icons8.com/ios/50/copy--v1.png" alt="copy--v1" /></div>
@@ -388,24 +390,24 @@ trait MembershipTraits
     $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
     $data = $response->data;
     $currentDate = new DateTime();
-    $filteredData = array_filter($data, function ($item) use ($currentDate) {
-      $endDate = new DateTime($item->date_end);
-      return $endDate >= $currentDate; // Keep items with a date_end value greater than or equal to the current date
-    });
+    // $filteredData = array_filter($data, function ($item) use ($currentDate) {
+    //   $endDate = new DateTime($item->date_end);
+    //   return $endDate >= $currentDate; // Keep items with a date_end value greater than or equal to the current date
+    // });
 
-    //if no voucher
-    if (empty($filteredData)) {
-      return "<div class=\"woo-ipos-voucher-container\">Bạn chưa có mã giảm giá nào</div>";
-    }
+    // //if no voucher
+    // if (empty($filteredData)) {
+    //   return "<div class=\"woo-ipos-voucher-container\">Bạn chưa có mã giảm giá nào</div>";
+    // }
 
     // Sort the filtered data based on the closest expiry date
-    usort($filteredData, function ($a, $b) {
+    usort($data, function ($a, $b) {
       $endDateA = new DateTime($a->date_end);
       $endDateB = new DateTime($b->date_end);
       return $endDateA <=> $endDateB; // Compare the expiry dates
     });
     $html = "<div id=\"woo-ipos-voucher-container\">";
-    foreach ($filteredData as $voucher) {
+    foreach ($data as $voucher) {
       $html .= $this->format_voucher_text($voucher);
     }
     $html .= "</div>";

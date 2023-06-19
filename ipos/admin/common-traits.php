@@ -27,6 +27,7 @@ trait CommonTraits
     unset($callback_args);
     unset($pos_parent_args);
     unset($modify_registration_args);
+    unset($credentials_file_args);
     $args = array(
       'type'      => 'input',
       'subtype'   => 'text',
@@ -60,77 +61,11 @@ trait CommonTraits
       'wp_data' => 'option'
     );
 
-    $ga_project_id_args = array(
+    $credentials_file_args = array(
       'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_project_id_setting',
-      'name' => 'woo_ipos_ga_project_id_setting',
-      'required' => 'true',
-      'get_options_list' => '',
-      'value_type' => 'normal',
-      'wp_data' => 'option'
-    );
-
-    $ga_client_x509_args = array(
-      'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_client_x509_setting',
-      'name' => 'woo_ipos_ga_client_x509_setting',
-      'required' => 'true',
-      'get_options_list' => '',
-      'value_type' => 'normal',
-      'wp_data' => 'option'
-    );
-
-    $ga_private_key_id_args = array(
-      'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_private_key_id_setting',
-      'name' => 'woo_ipos_ga_private_key_id_setting',
-      'required' => 'true',
-      'get_options_list' => '',
-      'value_type' => 'normal',
-      'wp_data' => 'option'
-    );
-
-    $ga_private_key_args = array(
-      'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_private_key_setting',
-      'name' => 'woo_ipos_ga_private_key_setting',
-      'required' => 'true',
-      'get_options_list' => '',
-      'value_type' => 'normal',
-      'wp_data' => 'option'
-    );
-
-    $ga_client_email_args = array(
-      'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_client_email_setting',
-      'name' => 'woo_ipos_ga_client_email_setting',
-      'required' => 'true',
-      'get_options_list' => '',
-      'value_type' => 'normal',
-      'wp_data' => 'option'
-    );
-    
-    $ga_client_id_args = array(
-      'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_client_id_setting',
-      'name' => 'woo_ipos_ga_client_id_setting',
-      'required' => 'true',
-      'get_options_list' => '',
-      'value_type' => 'normal',
-      'wp_data' => 'option'
-    );
-
-    $ga_property_id_args = array(
-      'type' => 'input',
-      'subtype' => 'text',
-      'id' => 'woo_ipos_ga_property_id_setting',
-      'name' => 'woo_ipos_ga_property_id_setting',
+      'subtype' => 'file',
+      'id' => 'woo_ipos_credentials_file_setting',
+      'name' => 'woo_ipos_credentials_file_setting',
       'required' => 'true',
       'get_options_list' => '',
       'value_type' => 'normal',
@@ -165,65 +100,12 @@ trait CommonTraits
     );
 
     add_settings_field(
-      'woo_ipos_ga_project_id_setting',
-      'GA Project ID',
+      'woo_ipos_credentials_file_setting',
+      'Analytics Credential File',
       array($this, 'woo_ipos_render_settings_field'),
       'woo_ipos_general_settings',
       'woo_ipos_general_section',
-      $ga_project_id_args
-    );
-    add_settings_field(
-      'woo_ipos_ga_client_x509_setting',
-      'GA Client_x509 Cert URL',
-      array($this, 'woo_ipos_render_settings_field'),
-      'woo_ipos_general_settings',
-      'woo_ipos_general_section',
-      $ga_client_x509_args
-    );
-
-    add_settings_field(
-      'woo_ipos_ga_private_key_id_setting',
-      'GA Private Key ID',
-      array($this, 'woo_ipos_render_settings_field'),
-      'woo_ipos_general_settings',
-      'woo_ipos_general_section',
-      $ga_private_key_id_args
-    );
-
-    add_settings_field(
-      'woo_ipos_ga_private_key_setting',
-      'GA Private Key',
-      array($this, 'woo_ipos_render_settings_field'),
-      'woo_ipos_general_settings',
-      'woo_ipos_general_section',
-      $ga_private_key_args
-    );
-
-    add_settings_field(
-      'woo_ipos_ga_client_email_setting',
-      'GA Client Email',
-      array($this, 'woo_ipos_render_settings_field'),
-      'woo_ipos_general_settings',
-      'woo_ipos_general_section',
-      $ga_client_email_args
-    );
-    
-    add_settings_field(
-      'woo_ipos_ga_client_id_setting',
-      'GA Client Id',
-      array($this, 'woo_ipos_render_settings_field'),
-      'woo_ipos_general_settings',
-      'woo_ipos_general_section',
-      $ga_client_id_args
-    );
-
-    add_settings_field(
-      'woo_ipos_ga_property_id_setting',
-      'GA Property ID',
-      array($this, 'woo_ipos_render_settings_field'),
-      'woo_ipos_general_settings',
-      'woo_ipos_general_section',
-      $ga_property_id_args
+      $credentials_file_args
     );
 
     register_setting(
@@ -240,42 +122,41 @@ trait CommonTraits
       'woo_ipos_general_settings',
       'woo_ipos_modify_registration_setting',
     );
-    
-    register_setting(
-      'woo_ipos_general_settings',
-      'woo_ipos_ga_project_id_setting',
-    );   
 
     register_setting(
       'woo_ipos_general_settings',
-      'woo_ipos_ga_client_x509_setting',
+      'woo_ipos_credentials_file_setting',
+      [
+        'sanitize_callback' => array($this, 'handleUploadedFile'),
+      ]
     );
+  }
 
-    register_setting(
-      'woo_ipos_general_settings',
-      'woo_ipos_ga_private_key_id_setting',
-    );
-    
-    register_setting(
-      'woo_ipos_general_settings',
-      'woo_ipos_ga_private_key_setting',
-    );
-    
-    register_setting(
-      'woo_ipos_general_settings',
-      'woo_ipos_ga_client_email_setting',
-    );
-    
-    register_setting(
-      'woo_ipos_general_settings',
-      'woo_ipos_ga_client_id_setting',
-    );
+  public function handleUploadedFile()
+  {
+    $value = '';
+    if (isset($_FILES['woo_ipos_credentials_file_setting']) && $_FILES['woo_ipos_credentials_file_setting']['error'] == 0) {
+      $uploaded_file = $_FILES['woo_ipos_credentials_file_setting'];
 
-    register_setting(
-      'woo_ipos_general_settings',
-      'woo_ipos_ga_property_id_setting',
-    );
-    
+      // Define the new file name
+      $new_file_name = 'credentials.json';
+
+      // Define the destination directory
+      $upload_dir = wp_upload_dir(); // Get the WordPress uploads directory
+      $destination_dir = $upload_dir['path'];
+
+      // Move the uploaded file to the destination directory with the new file name
+      $moved = move_uploaded_file($uploaded_file['tmp_name'], $destination_dir . '/' . $new_file_name);
+
+      // Check if the file was successfully moved
+      if ($moved) {
+        // Retrieve the file URL or file path and update the setting value
+        $file_path = $destination_dir . '/' . $new_file_name;
+        $value = $file_path;
+      }
+    }
+    // Return the sanitized value
+    return $value;
   }
 
   // COMMON FUNCTION TO CALL API
