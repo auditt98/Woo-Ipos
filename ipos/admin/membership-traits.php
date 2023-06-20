@@ -367,6 +367,58 @@ trait MembershipTraits
 <?php
   }
 
+  public function get_vouchers()
+  {
+    $api_key = get_option('woo_ipos_api_key_setting');
+    $pos_parent = get_option('woo_ipos_pos_parent_setting');
+    $current_user = wp_get_current_user();
+    $current_user_login = $current_user->user_login;
+    $get_member_vouchers_url = 'member_vouchers';
+    $get_member_vouchers_method = 'GET';
+    $query_params = array(
+      'access_token' => $api_key,
+      'pos_parent' => $pos_parent,
+      'user_id' => $current_user_login
+    );
+
+    $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
+    $data = $response->data;
+    //check if data is null, if it is, set it to empty array
+    if (is_null($data)) {
+      $data = array();
+    }
+    foreach ($data as $voucher) {
+      $campaignName = $voucher->voucher_campaign_name;
+      $splittedName = explode("_", $campaignName);
+      $voucher->voucher_label = $splittedName[0];
+      $voucher->voucher_desc = $splittedName[1];
+      $voucher->voucher_display_expiry = date('d/m/Y', strtotime($voucher->date_end));
+    }
+    usort($data, function ($a, $b) {
+      $endDateA = new DateTime($a->date_end);
+      $endDateB = new DateTime($b->date_end);
+
+      // Compare the date_end values
+      $dateComparison = $endDateA <=> $endDateB;
+
+      // Handle expired coupons
+      if ($endDateA < new DateTime() && $endDateB < new DateTime()) {
+        // Both coupons are expired, sort by date_end
+        return $dateComparison;
+      } elseif ($endDateA < new DateTime()) {
+        // Only $a is expired, move $b ahead
+        return 1;
+      } elseif ($endDateB < new DateTime()) {
+        // Only $b is expired, move $a ahead
+        return -1;
+      }
+
+      // Neither coupon is expired, sort by date_end
+      return $dateComparison;
+    });
+    return $data;
+  }
+
   //SHORTCODE FOR DISPLAYING VOUCHERS
   public function display_vouchers_info()
   {
@@ -388,18 +440,6 @@ trait MembershipTraits
 
     $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
     $data = $response->data;
-    $currentDate = new DateTime();
-    // $filteredData = array_filter($data, function ($item) use ($currentDate) {
-    //   $endDate = new DateTime($item->date_end);
-    //   return $endDate >= $currentDate; // Keep items with a date_end value greater than or equal to the current date
-    // });
-
-    // //if no voucher
-    // if (empty($filteredData)) {
-    //   return "<div class=\"woo-ipos-voucher-container\">Bạn chưa có mã giảm giá nào</div>";
-    // }
-
-    // Sort the filtered data based on the closest expiry date
     usort($data, function ($a, $b) {
       $endDateA = new DateTime($a->date_end);
       $endDateB = new DateTime($b->date_end);

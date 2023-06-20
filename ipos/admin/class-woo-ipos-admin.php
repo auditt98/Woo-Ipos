@@ -74,12 +74,17 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_register_post', array($this, 'disable_email_validation'), 10, 3);
 		add_action('woocommerce_created_customer', array($this, 'sync_created_customer_to_ipos'), 10, 3);
 		add_action('woocommerce_login_form_start', array($this, 'customize_woo_login_form'));
+
+		add_action('woocommerce_checkout_before_customer_details', array($this, 'add_vouchers_to_checkout_form'));
+
 		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
 		add_shortcode('woo_ipos_customer_vouchers', array($this, 'display_vouchers_info'));
-		add_shortcode('woo_ipos_customer_cart_data', array($this, 'check_voucher_valid'));
+		add_shortcode('test', array($this, 'test'));
+		add_shortcode('test_order', array($this, 'test_order'));
 
 		// Add CSS class for logged in and logged out users
 		add_filter('body_class', array($this, 'er_logged_in_filter'));
+		// add_action( 'woocommerce_applied_coupon', array($this, 'check_voucher_valid'));
 	}
 
 	function er_logged_in_filter($classes)
