@@ -43,10 +43,13 @@ trait OrderTraits
   {
     $current_cart = $this->get_current_cart();
     //for each item in cart
-    foreach ($current_cart as $key => $cart_item) {
+    echo json_encode($current_cart);
+    foreach ($current_cart as $cart_item) {
       //get product id
       $product_id = $cart_item['product_id'];
       $product = wc_get_product($product_id);
+      echo json_encode($product);
+      return $product;
       $product_name = $product->get_name();
       $product_sku = $this->get_product_sku_from_id($product_id);
       $variation_id = $cart_item['variation_id'];
@@ -132,7 +135,7 @@ trait OrderTraits
     }
   }
 
-  public function apply_voucher($request)
+  public function apply_voucher()
   {
     // {
     //   "pos_id": 3160,
@@ -162,25 +165,23 @@ trait OrderTraits
         'access_token' => $api_key
       );
 
-      $data = $_POST;
-      //VOUCHER ID
-      $voucherId = $data['voucherId'];
-
+      $voucherId = $_POST['voucher_id'];
+      // return;
       //POS Parent
       $pos_parent = get_option('woo_ipos_pos_parent_setting');
 
       //Featured POS
       $featured_pos = $this->get_featured_pos();
-
-      $current_cart = $this->parse_current_cart();
-
       $current_user = wp_get_current_user();
+      $current_cart = $this->parse_current_cart();
+      echo json_encode($current_cart);
+      return;
 
       //CURRENT USER LOGIN
       $current_user_login = $current_user->user_login;
 
       $order_data_item = array();
-
+      return $current_cart;
       foreach ($current_cart as $cart_item) {
         $item = array();
         //
@@ -294,18 +295,20 @@ trait OrderTraits
       });
 
       function verifyVoucher(voucherId) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/wp-json/woo-ipos/v1/apply_voucher'); // Replace 'verify_voucher.php' with the actual file or endpoint for voucher verification
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            var response = JSON.parse(xhr.responseText);
-            console.log(response); // Log or process the response data from the backend
-          } else {
-            console.error('Voucher verification failed. Status code: ' + xhr.status);
+        jQuery.ajax({
+          url: ajaxurl, // The AJAX URL provided by WordPress
+          type: 'POST',
+          data: {
+            action: 'apply_voucher_action', // The name of the AJAX action
+            voucher_id: voucherId
+          },
+          success: function(response) {
+            console.log('Current User ID:', response);
+          },
+          error: function(error) {
+            console.error('AJAX Error:', error);
           }
-        };
-        xhr.send('voucherId=' + voucherId);
+        });
       }
     </script>
 
