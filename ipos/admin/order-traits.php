@@ -39,6 +39,67 @@ trait OrderTraits
     return WC()->cart->get_cart();
   }
 
+  public function parse_current_cart()
+  {
+    $current_cart = $this->get_current_cart();
+    //for each item in cart
+    foreach ($current_cart as $key => $cart_item) {
+      //get product id
+      $product_id = $cart_item['product_id'];
+      $product = wc_get_product($product_id);
+      $product_name = $product->get_name();
+      $product_sku = $this->get_product_sku_from_id($product_id);
+      $variation_id = $cart_item['variation_id'];
+      //get product price and variation price
+      $product_price = $product->get_price();
+      $variation_price = $product->get_price();
+
+      if (isset($cart_item['variation_id'])) {
+        $variation = wc_get_product($variation_id);
+        $variation_name = $variation->get_name();
+        $variation_sku = $this->get_product_sku_from_id($variation_id);
+      } else {
+        $variation_name = '';
+        $variation_sku = '';
+      }
+      $current_cart[$key]['product_name'] = $product_name;
+      $current_cart[$key]['variation_name'] = $variation_name;
+      $current_cart[$key]['variation_sku'] = $variation_sku;
+      $current_cart[$key]['product_sku'] = $product_sku;
+      $current_cart[$key]['product_price'] = $product_price;
+      $current_cart[$key]['variation_price'] = $variation_price;
+
+      //loop through $cart_item['product_extras']
+      $product_extras = $cart_item['product_extras'];
+      if (isset($product_extras['groups'])) {
+        $groups = $product_extras['groups'];
+        $extras = array();
+        foreach ($groups as $group_item) {
+          //loop through $group_item
+          foreach ($group_item as $group_item_key) {
+            # code...
+            if (isset($group_item_key['label']) && isset($group_item_key['value'])) {
+              $label = $group_item_key['label'];
+              $value = $group_item_key['value'];
+              //push to extras
+              array_push($extras, array(
+                'label' => $label,
+                'value' => $value
+              ));
+            }
+          }
+        }
+        if (!empty($extras)) {
+          //update extras in current cart
+          $current_cart[$key]['extras'] = $extras;
+        }
+      }
+      $original_price = $product_extras['original_price'];
+      $current_cart[$key]['original_price'] = $original_price;
+    }
+    return $current_cart;
+  }
+
   //Lấy SKU sản phẩm từ ID
   public function get_product_sku_from_id($id)
   {
@@ -46,10 +107,141 @@ trait OrderTraits
     return $product->get_sku();
   }
 
+  public function parse_product_sku($sku)
+  {
+    $sku_parts = explode('|', $sku);
+    if (count($sku_parts) == 3) {
+      $type_id = $sku_parts[0];
+      $store_id = $sku_parts[1];
+      $product_type = $sku_parts[2];
+      return array(
+        'product_type' => $product_type,
+        'type_id' => $type_id,
+        'store_id' => $store_id
+      );
+    } else if (count($sku_parts) == 2) {
+      $type_id = $sku_parts[0];
+      $store_id = $sku_parts[1];
+      return array(
+        'product_type' => '[NORMAL]',
+        'type_id' => $type_id,
+        'store_id' => $store_id
+      );
+    } else {
+      return '';
+    }
+  }
+
   public function apply_voucher($request)
   {
-    $voucherId = $request->get_param('voucherId');
-    return $voucherId;
+    // {
+    //   "pos_id": 3160,
+    //   "pos_parent": "SAOBANG",
+    //   "voucher_code": "M5JZM5QG",
+    //   "membership_id": "84967142868",
+    //   "order_data_item": [
+    //     {
+    //       "Item_Type_Id": "CF",
+    //       "Item_Id": "BR09",
+    //       "Item_Name": "DUCK DUCK",
+    //       "Price": 60000,
+    //       "Amount": 120000,
+    //       "Quantity": 2,
+    //       "Note": "DUCK DUCK"
+    //     }
+    //   ]
+    // }
+    try {
+      //API PARAMS
+      $api_key = get_option('woo_ipos_api_key_setting');
+
+      $check_voucher_url = 'check_voucher';
+      $check_voucher_method = 'POST';
+
+      $query_params = array(
+        'access_token' => $api_key
+      );
+
+      $data = $_POST;
+      //VOUCHER ID
+      $voucherId = $data['voucherId'];
+
+      //POS Parent
+      $pos_parent = get_option('woo_ipos_pos_parent_setting');
+
+      //Featured POS
+      $featured_pos = $this->get_featured_pos();
+
+      $current_cart = $this->parse_current_cart();
+
+      $current_user = wp_get_current_user();
+
+      //CURRENT USER LOGIN
+      $current_user_login = $current_user->user_login;
+
+      $order_data_item = array();
+
+      foreach ($current_cart as $cart_item) {
+        $item = array();
+        //
+        $sku = '';
+        $variation_id = $cart_item['variation_id'];
+
+        //SET SKU
+        if (isset($cart_item['variation_sku'])) {
+          $sku = $cart_item['variation_sku'];
+        } else {
+          $sku = $cart_item['product_sku'];
+        }
+
+        //parse sku
+        $sku_parts = $this->parse_product_sku($sku);
+        $item_type_id = $sku_parts['type_id']; //id of the type of product
+        $item_id = $sku_parts['store_id']; //id of product 
+        $item_product_type = $sku_parts['product_type']; //Depends on SKU, can be COMBO, NORMAL
+
+        //get product name
+        $product_name = $cart_item['product_name'];
+        //if variation id is set, use variation price
+        $item_price = $cart_item['product_price'];
+
+        if (isset($variation_id)) {
+          $item_price = $cart_item['variation_price'];
+        } else {
+          $item_price = $cart_item['product_price'];
+        }
+        $amount = $cart_item['line_total'];
+        //set item
+        $item['Item_Type_Id'] = $item_type_id;
+        $item['Item_Id'] = $item_id;
+        $item['Item_Name'] = $product_name;
+        $price = $item_price;
+        //if original price is set, use original price
+        if (isset($cart_item['original_price'])) {
+          $price = $cart_item['original_price'];
+        }
+        $item['Price'] = $price;
+        $quantity = $cart_item['quantity'];
+        $item['Amount'] = $amount;
+        $item['Quantity'] = $quantity;
+        $item['Note'] = $product_name;
+        //push item to order_data_item
+        array_push($order_data_item, $item);
+      }
+
+      $request = array(
+        'pos_id' => $featured_pos,
+        'pos_parent' => $pos_parent,
+        'voucher_code' => $voucherId,
+        'membership_id' => $current_user_login,
+        'order_data_item' => $order_data_item
+      );
+      return $request;
+      $response = $this->call_api($check_voucher_url, $check_voucher_method, array('Content-Type: application/json'), json_encode($request), $query_params);
+      return $response;
+    } catch (Exception $e) {
+      return $e->getMessage();
+    }
   }
 
   public function add_vouchers_to_checkout_form()
@@ -210,8 +402,9 @@ trait OrderTraits
 
   public function test_order()
   {
-    // return json_encode(WC()->cart->get_cart());
-    return json_encode($this->get_vouchers());
+    $all_poses = $this->parse_current_cart();
+    return json_encode($all_poses);
+    // return json_encode($this->get_vouchers());
   }
 
   public function test()
