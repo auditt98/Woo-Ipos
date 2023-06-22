@@ -149,7 +149,6 @@ trait OrderTraits
         $label = $splittedName[0];
         $cart->add_fee($label, -$discount_amount);
       } else {
-        
       }
     }
   }
@@ -277,37 +276,16 @@ trait OrderTraits
 ?>
     <div id="custom_section">
       <h3>Voucher Khuyến mãi</h3>
-      <button class="show-vouchers-btn button">Hiện danh sách vouchers</button>
-    </div>
-
-    <div id="voucher-popup" class="popup">
-      <div class="popup-content">
-        <span class="close">&times;</span>
-        <div class="voucher-container">
-          <?php foreach ($vouchers as $voucher) : ?>
-            <div class="voucher" data-voucher-code="<?php echo $voucher->voucher_code; ?>">
-              <div class='voucher-label'><?php echo $voucher->voucher_label; ?></div>
-              <div class='voucher-desc'><?php echo $voucher->voucher_desc; ?></div>
-              <div class='voucher-exp'><?php echo $voucher->voucher_display_expiry; ?></div>
-            </div>
-          <?php endforeach; ?>
-        </div>
+      <div class="voucher-container">
+        <?php foreach ($vouchers as $voucher) : ?>
+          <div class="voucher" data-voucher-code="<?php echo $voucher->voucher_code; ?>">
+            <div class='voucher-label'><?php echo $voucher->voucher_label; ?></div>
+            <div class='voucher-desc'><?php echo $voucher->voucher_desc; ?></div>
+            <div class='voucher-exp'><?php echo $voucher->voucher_display_expiry; ?></div>
+          </div>
+        <?php endforeach; ?>
       </div>
     </div>
-
-    <script>
-      jQuery(function($) {
-        $('.show-vouchers-btn').click(function() {
-          $('#voucher-popup').addClass('show');
-          return false;
-        });
-
-        $('.close').click(function() {
-          $('#voucher-popup').removeClass('show');
-          return false;
-        });
-      });
-    </script>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -332,6 +310,8 @@ trait OrderTraits
             if (response?.data?.error?.message) {
               alert(response.data.error.message);
             }
+            //refresh page
+            jQuery(document.body).trigger("update_checkout");
           },
           error: function(error) {
             console.error('Đã có lỗi xảy ra');
@@ -342,9 +322,8 @@ trait OrderTraits
 
     <style>
       .voucher {
-        flex-basis: 47%;
-        max-width: 47%;
-        padding: 30px 20px;
+        width: 30%;
+        padding: 20px 10px;
         border: 1px solid #53648aff;
       }
 
@@ -374,57 +353,10 @@ trait OrderTraits
         color: white;
       }
 
-      .popup {
-        display: none;
-        position: fixed;
-        z-index: 999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-      }
-
-      .popup.show {
-        display: block !important;
-      }
-
-      .popup-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 20px 10px 20px 20px;
-        border: 1px solid #888;
-        width: 80%;
-        max-width: 600px;
-        position: relative;
-        overflow: auto;
-        height: 100%;
-        max-height: 500px;
-      }
-
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        position: sticky;
-        cursor: pointer;
-        top: 0;
-        right: 0;
-      }
-
-      .close:hover,
-      .close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
-      }
-
       .voucher-container {
         display: flex;
         flex-wrap: wrap;
-        max-height: 450px;
+        gap: 10px;
       }
     </style>
 <?php

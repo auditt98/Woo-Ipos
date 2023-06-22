@@ -401,20 +401,14 @@ trait MembershipTraits
       // Compare the date_end values
       $dateComparison = $endDateA <=> $endDateB;
 
-      // Handle expired coupons
-      if ($endDateA < new DateTime() && $endDateB < new DateTime()) {
-        // Both coupons are expired, sort by date_end
-        return $dateComparison;
-      } elseif ($endDateA < new DateTime()) {
-        // Only $a is expired, move $b ahead
-        return 1;
-      } elseif ($endDateB < new DateTime()) {
-        // Only $b is expired, move $a ahead
-        return -1;
-      }
-
       // Neither coupon is expired, sort by date_end
       return $dateComparison;
+    });
+
+    //remove vouchers that are expired
+    $data = array_filter($data, function ($voucher) {
+      $endDate = new DateTime($voucher->date_end);
+      return $endDate >= new DateTime();
     });
     return $data;
   }
