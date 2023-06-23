@@ -654,5 +654,251 @@
     },
     "trackid": "230622-102454-684437",
     "ip": "2023-06-22 10:24:54 ICT  |  10.244.162.119  |  127.0.0.1"
+  },
+  "c": {
+    "id": 14457,
+    "parent_id": 0,
+    "status": "processing",
+    "currency": "VND",
+    "version": "7.8.0",
+    "prices_include_tax": false,
+    "date_created": {
+      "date": "2023-06-23 07:34:54.000000",
+      "timezone_type": 1,
+      "timezone": "+00:00"
+    },
+    "date_modified": {
+      "date": "2023-06-23 07:34:54.000000",
+      "timezone_type": 1,
+      "timezone": "+00:00"
+    },
+    "discount_total": "0",
+    "discount_tax": "0",
+    "shipping_total": "25120",
+    "shipping_tax": "0",
+    "cart_tax": "0",
+    "total": "347620",
+    "total_tax": "0",
+    "customer_id": 18401,
+    "order_key": "wc_order_VTehuohnZT39m",
+    "billing": {
+      "first_name": "Việt",
+      "last_name": "Anh",
+      "company": "",
+      "address_1": "P103-TT Ban Đối Ngoại, Ngọc Khánh, Ba Đình",
+      "address_2": "",
+      "city": "",
+      "state": "",
+      "postcode": "",
+      "country": "VN",
+      "email": "vietanh8i1998@gmail.com",
+      "phone": "84326373667"
+    },
+    "shipping": {
+      "first_name": "",
+      "last_name": "",
+      "company": "",
+      "address_1": "",
+      "address_2": "",
+      "city": "",
+      "state": "",
+      "postcode": "",
+      "country": "",
+      "phone": ""
+    },
+    "payment_method": "cod",
+    "payment_method_title": "Thanh toán bằng tiền mặt",
+    "transaction_id": "",
+    "customer_ip_address": "118.70.236.74",
+    "customer_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "created_via": "checkout",
+    "customer_note": "Giao som nhe",
+    "date_completed": null,
+    "date_paid": null,
+    "cart_hash": "cdee40ce5119fc9ca7ff15e5b31c95bf",
+    "order_stock_reduced": true,
+    "download_permissions_granted": true,
+    "new_order_email_sent": true,
+    "recorded_sales": true,
+    "recorded_coupon_usage_counts": true,
+    "number": "14457",
+    "meta_data": [
+      {
+        "id": 36001,
+        "key": "_billing_wooccm12",
+        "value": "1"
+      },
+      {
+        "id": 36002,
+        "key": "_billing_wooccm11",
+        "value": "Delivery - Giao tận nơi (chỉ áp dụng trong khu vực nội thành Hà Nội)"
+      },
+      {
+        "id": 36003,
+        "key": "_billing_wooccm13",
+        "value": "2023/06/23 20:34"
+      },
+      {
+        "id": 36004,
+        "key": "is_vat_exempt",
+        "value": "no"
+      },
+      {
+        "id": 36005,
+        "key": "trp_language",
+        "value": "vi"
+      },
+      {
+        "id": 36014,
+        "key": "pewc_product_extra_id",
+        "value": "14458"
+      },
+      {
+        "id": 36015,
+        "key": "pewc_uploaded_files",
+        "value": []
+      },
+      {
+        "id": 36017,
+        "key": "_ga_tracked",
+        "value": "1"
+      }
+    ],
+    "line_items": {
+      "54": {}
+    },
+    "tax_lines": [],
+    "shipping_lines": {
+      "56": {}
+    },
+    "fee_lines": {
+      "55": {}
+    },
+    "coupon_lines": [],
+    "order_items": {
+      "54": {
+        "id": 54,
+        "order_id": 14457,
+        "name": "Passion Fruit Mille Crepes - </span>Size 6",
+        "product_id": 13831,
+        "variation_id": 13832,
+        "quantity": 1,
+        "tax_class": "",
+        "subtotal": "645000",
+        "subtotal_tax": "0",
+        "total": "645000",
+        "total_tax": "0",
+        "taxes": {
+          "total": [],
+          "subtotal": []
+        },
+        "meta_data": [
+          {
+            "id": 512,
+            "key": "pa_size",
+            "value": "size-6"
+          },
+          {
+            "id": 513,
+            "key": "_Phụ kiện",
+            "value": "Set phụ kiện 01 nến số 0 ₫</span></span>"
+          },
+          {
+            "id": 514,
+            "key": "_Chọn nến số thứ nhất",
+            "value": "Nến số 2 20.000 ₫</span></span>"
+          },
+          {
+            "id": 515,
+            "key": "product_extras",
+            "value": {
+              "product_id": 13831,
+              "title": "Passion Fruit Mille Crepes",
+              "groups": {
+                "14221": {
+                  "14222": {
+                    "type": "select",
+                    "label": "Phụ kiện",
+                    "id": "pewc_group_14221_14222",
+                    "group_id": "14221",
+                    "field_id": 14222,
+                    "price": 0,
+                    "value": "Set phụ kiện 01 nến số",
+                    "flat_rate": [],
+                    "hidden": "",
+                    "price_visibility": "hidden",
+                    "value_without_price": "Set phụ kiện 01 nến số"
+                  },
+                  "14223": {
+                    "type": "select",
+                    "label": "Chọn nến số thứ nhất",
+                    "id": "pewc_group_14221_14223",
+                    "group_id": "14221",
+                    "field_id": 14223,
+                    "price": 20000,
+                    "value": "Nến số 2",
+                    "flat_rate": [],
+                    "hidden": "",
+                    "price_visibility": "hidden",
+                    "value_without_price": "Nến số 2"
+                  }
+                }
+              },
+              "price_with_extras": 645000,
+              "original_price": 625000,
+              "aelia_currency": false
+            }
+          }
+        ]
+      }
+    },
+    "order_fees": {
+      "55": {
+        "id": 55,
+        "order_id": 14457,
+        "name": "Siêu giảm giá các sản phẩm Cafe",
+        "tax_class": "0",
+        "tax_status": "taxable",
+        "amount": "-322500",
+        "total": "-322500",
+        "total_tax": "0",
+        "taxes": {
+          "total": []
+        },
+        "meta_data": []
+      }
+    },
+    "order_shipping_lines": {
+      "56": {
+        "id": 56,
+        "order_id": 14457,
+        "name": "Delivery - C'est Si Bon 276 Thái Hà, Ô Chợ Dừa, Đống Đa, Hà Nội",
+        "method_title": "Delivery - C'est Si Bon 276 Thái Hà, Ô Chợ Dừa, Đống Đa, Hà Nội",
+        "method_id": "wcsdm",
+        "instance_id": "13",
+        "total": "25120",
+        "total_tax": "0",
+        "taxes": {
+          "total": []
+        },
+        "meta_data": [
+          {
+            "id": 527,
+            "key": "api_response",
+            "value": {
+              "distance": "3.14",
+              "distance_text": "3.1 km",
+              "duration": "644",
+              "duration_text": "10 minutes"
+            }
+          },
+          {
+            "id": 528,
+            "key": "Mặt hàng",
+            "value": "Passion Fruit Mille Crepes - Size 6 × 1"
+          }
+        ]
+      }
+    }
   }
 }

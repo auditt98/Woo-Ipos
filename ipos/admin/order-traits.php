@@ -141,9 +141,10 @@ trait OrderTraits
     $response = isset($_SESSION['voucher_response']) ? unserialize($_SESSION['voucher_response']) : null;
     if ($response) {
       $data = $response->data;
-
       //check discount amount, if there's discount amount, add a fee of -discount_amount
       if (isset($data->Discount_Amount) && $data->Discount_Amount != 0) {
+        WC()->session->set('applied_voucher', $data->Coupon_Code);
+        error_log('------------------' . $data->Coupon_Code . '------------------');
         $discount_amount = $data->Discount_Amount;
         $splittedName = explode("_", $data->voucher_campaign_name);
         $label = $splittedName[0];
@@ -284,6 +285,7 @@ trait OrderTraits
             <div class='voucher-exp'><?php echo $voucher->voucher_display_expiry; ?></div>
           </div>
         <?php endforeach; ?>
+        <input type="hidden" name="applied_voucher" id="applied_voucher_input" value="">
       </div>
     </div>
 
@@ -309,6 +311,9 @@ trait OrderTraits
           success: function(response) {
             if (response?.data?.error?.message) {
               alert(response.data.error.message);
+            }
+            if (response?.data?.data?.Coupon_Code) {
+              jQuery('#applied_voucher_input').val(response.data.data.Coupon_Code);
             }
             //refresh page
             jQuery(document.body).trigger("update_checkout");
@@ -362,12 +367,69 @@ trait OrderTraits
 <?php
   }
 
-
-  public function test_order()
+  public function save_voucher_to_order()
   {
-    $all_poses = $this->parse_current_cart();
-    return json_encode($all_poses);
-    // return json_encode($this->get_vouchers());
+    if (isset($_POST['applied_voucher']) && !empty($_POST['applied_voucher'])) {
+      // Perform any validation you need
+      $voucher_value = sanitize_text_field($_POST['applied_voucher']);
+
+      // Save the value as order meta data or perform other necessary actions
+      WC()->session->set('applied_voucher', $voucher_value);
+    }
+  }
+
+  public function handle_new_order($order_id)
+  {
+    ini_set('log_errors_max_length', '10000');
+    // Get the order object
+    $order = wc_get_order($order_id);
+    $order_data = $order->get_data();
+
+    //ITEMS
+    $order_items_data = array_map(function ($item) {
+      return $item->get_data();
+    }, $order->get_items());
+
+    //FEES
+    $order_fee_data = array_map(function ($item) {
+      return $item->get_data();
+    }, $order->get_fees());
+  }
+
+  public function test_order($attr)
+  {
+    $attr = shortcode_atts(array(
+      'id' => 0
+    ), $attr);
+    $id = $attr['id'];
+    // get order from id
+    if (!$id || $id == 0) {
+      return 'No order id';
+    }
+    $order = wc_get_order($id);
+    $order_data = $order->get_data(); // The Order data
+    $order_items_data = array_map(function ($item) {
+      return $item->get_data();
+    }, $order->get_items());
+    $order_data['order_items'] = $order_items_data;
+
+    $order_fee_data = array_map(function ($item) {
+      return $item->get_data();
+    }, $order->get_fees());
+    $order_data['order_fees'] = $order_fee_data;
+
+    // $order_line_items = array_map(function ($item) {
+    //   return $item->get_data();
+    // }, $order->get_line_items());
+    // $order_data['order_line_items'] = $order_line_items;
+
+
+    $order_shipping_lines = array_map(function ($item) {
+      return $item->get_data();
+    }, $order->get_shipping_methods());
+    $order_data['order_shipping_lines'] = $order_shipping_lines;
+
+    return json_encode($order_data);
   }
 
   public function test()
