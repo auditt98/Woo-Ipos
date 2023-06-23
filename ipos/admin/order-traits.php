@@ -429,7 +429,28 @@ trait OrderTraits
     }, $order->get_shipping_methods());
     $order_data['order_shipping_lines'] = $order_shipping_lines;
 
+    //parse shipping method
+
     return json_encode($order_data);
+  }
+
+  public function parse_order_shipping_method($order_data) {
+    $is_delivery = false;
+    $pickup_location = '';
+    
+    //create array
+    $shipping_method = array(
+      'is_delivery' => false,
+      'pickup_location' => ''
+    );
+
+
+    //loop through order_shipping_lines
+    foreach ($order_data['order_shipping_lines'] as $shipping_line) {
+      $shipping_method_title = $shipping_line['method_title'];
+
+    }
+
   }
 
   public function test()
