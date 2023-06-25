@@ -198,7 +198,7 @@ trait MembershipTraits
 
 
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
-  public function display_customer_info()
+  public function display_customer_info() // thong tin tai khoan
   {
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
@@ -218,66 +218,299 @@ trait MembershipTraits
     //return $response->data as json 
     $customer = $response->data;
     // $customer->name
-    $html = "";
+    // $html = "";
+    $customer_name = "";
+    $customer_membership_type = "";
+    $customer_point = "";
+    $customer_birthday = "";
     if (is_user_logged_in()) {
       $customer_name = !empty($customer->name) ? $customer->name : "Chưa có thông tin";
       $customer_membership_type = !empty($customer->membership_type_name) ? $customer->membership_type_name : "Chưa có thông tin";
       $customer_point = $customer->point;
       $customer_birthday = !empty($customer->birthday) ? $this->convert_date_format($customer->birthday) : "Chưa có thông tin";
-      $html =
-        "<table class=\"user-table\">"
-        .
-        "<tr>
-          <td>Họ tên</td>
-          <td>$customer_name</td>
-        </tr>"
-        .
-        "<tr>
-          <td>Số điện thoại</td>
+      // $html =
+      //   "<table class=\"user-table\">"
+      //   .
+      //   "<tr>
+      //     <td>Họ tên</td>
+      //     <td>$customer_name</td>
+      //   </tr>"
+      //   .
+      //   "<tr>
+      //     <td>Số điện thoại</td>
 
-          <td>$current_user_login</td>
-        </tr>"
-        .
-        "<tr>
-          <td>Loại hội viên</td>
-          <td>$customer_membership_type</td>
-        </tr>"
-        .
-        "<tr>
-          <td>Điểm thành viên</td>
-          <td>$customer_point</td>
-        </tr>"
-        .
-        "<tr>
-          <td>Ngày sinh</td>
-          <td>$customer_birthday</td>
-        </tr>"
-        . "</table>";
+      //     <td>$current_user_login</td>
+      //   </tr>"
+      //   .
+      //   "<tr>
+      //     <td>Loại hội viên</td>
+      //     <td>$customer_membership_type</td>
+      //   </tr>"
+      //   .
+      //   "<tr>
+      //     <td>Điểm thành viên</td>
+      //     <td>$customer_point</td>
+      //   </tr>"
+      //   .
+      //   "<tr>
+      //     <td>Ngày sinh</td>
+      //     <td>$customer_birthday</td>
+      //   </tr>"
+      //   . "</table>";
     }
 
   ?>
+    <div class="membership_tab">
+      <div class="membership_top" id="membership_top_id">
+        <div>
+          <div class="membership_top--left">
+            <div>hạng</div>
+            <div>pon</div>
+          </div>
+          <div class="membership_top--right">60 pon</div>
+        </div>
+
+        <div class="membership_detail">
+          <div onclick="toggleTable()">Thông tin chi tiết</div>
+
+          <div class="membership_detail--table" id="membership_table">
+            <table>
+              <tr>
+                <td>Họ và tên</td>
+                <td>Maria Anders</td>
+              </tr>
+              <tr>
+                <td>Số điện thoại</td>
+                <td>Francisco Chang</td>
+              </tr>
+              <tr>
+                <td>Loại hội viên</td>
+                <td>Roland Mendel</td>
+              </tr>
+              <tr>
+                <td>Điểm thành viên</td>
+                <td>Helen Bennett</td>
+              </tr>
+              <tr>
+                <td>Ngày sinh</td>
+                <td>Yoshi Tannamuri</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="membership_content">
+        <div>Ưu đãi thành viên</div>
+        <div class="voucher_grid">
+          <div class="voucher valid">
+            <div class="voucher_icon valid_c">
+              <img src="http://placeimg.com/16/16/any" />
+            </div>
+            <div class="voucher_content">
+              <div>Miễn phí 1 đồ uống bất kỳ</div>
+              <div>khi tích đủ 60 PON</div>
+            </div>
+          </div>
+
+          <div class="voucher tobe_valid">
+            <div class="voucher_icon">
+              <img src="http://placeimg.com/16/16/any" />
+            </div>
+            <div class="voucher_content">
+              <div>Miễn phí 1 đồ uống bất kỳ</div>
+              <div>khi tích đủ 60 PON</div>
+            </div>
+          </div>
+
+          <div class="voucher oudate">
+            <div class="voucher_icon oudate_c">
+              <img src="http://placeimg.com/16/16/any" />
+            </div>
+            <div class="voucher_content">
+              <div>Miễn phí 1 đồ uống bất kỳ</div>
+              <div>khi tích đủ 60 PON</div>
+            </div>
+          </div>
+
+          <div class="voucher oudate">
+            <div class="voucher_icon oudate_c">
+              <img src="http://placeimg.com/16/16/any" />
+            </div>
+            <div class="voucher_content">
+              <div>Miễn phí 1 đồ uống bất kỳ</div>
+              <div>khi tích đủ 60 PON</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <style>
-      .user-table {
-        border-collapse: collapse;
-        width: 100%;
-        border: 1px solid #f5f5f5;
-      }
+ .membership_top {
+  background-color: #53648a;
+  color: white;
+  padding: 16px;
+  font-weight: 700;
+  height: 120px;
+  transition: height .5s;
+}
 
-      .user-table td {
-        padding: 10px !important;
-        border: 1px solid #e2e2e2;
-      }
+.membership_top > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  text-transform: uppercase;
+}
 
-      .user-table tr {
-        background-color: white;
-      }
+.membership_top--left > div:last-child {
+  font-size: 40px;
+  margin-top: 6px;
+}
 
-      .user-table tr:hover {
-        background-color: #e2e2e2;
-      }
+.membership_detail {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.membership_detail > div:first-child {
+  cursor: pointer;
+  border: 2px solid white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.membership_detail--table {
+  transition: opacity 1.5s ease-in-out;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.active_table {
+  opacity: 1;
+  height: 100%;
+}
+
+.extend_height {
+  height: 400px;
+}
+
+table {
+  width: 100%;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+  color: black;
+}
+
+tr:nth-child(odd) {
+  background-color: #a9a9a9;
+}
+
+.membership_content {
+  padding: 24px;
+  background-color: #f3f3f3;
+}
+
+.membership_content > div:first-child {
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: #434343;
+}
+
+.voucher_grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 16px;
+}
+
+.voucher {
+  display: flex;
+  padding: 16px 0 16px 12px;
+  border-radius: 12px;
+  align-items: center;
+  cursor: default;
+}
+
+.voucher_icon > img {
+  width: 26px;
+  margin-right: 14px;
+  border-radius: 50%;
+}
+
+.voucher_content > div:first-child {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.voucher_content > div:last-child {
+  font-size: 14px;
+}
+
+.valid {
+  background-color: #53648a;
+  color: white;
+  transition: all 0.5s ease-in-out;
+}
+
+.valid_c > img {
+  border: 2px solid white;
+}
+
+.valid:hover {
+  box-shadow: 20px 20px 50px 15px grey;
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.tobe_valid {
+  background-color: #f2f2ec;
+  border-color: #53648a;
+  color: #53648a;
+  border: 2px solid #53648a;
+}
+
+.oudate {
+  color: #53648a;
+  background-color: #f2f2ec;
+  border: 2px solid #53648a;
+  opacity: 0.3;
+}
+
+.oudate_c > img {
+  border: 2px solid #53648a;
+}
     </style>
+
+<script>
+    function toggleTable() {
+      const table = document.getElementById('membership_table');
+      const topId = document.getElementById('membership_top_id');
+
+      if (table.classList.contains('active_table')) {
+        table.classList.remove('active_table');
+        topId.classList.remove('extend_height');
+      } else {
+        table.classList.add('active_table');
+        topId.classList.add('extend_height');
+      }
+    }
+  </script>
+
   <?php
-    return $html;
+    // return $html;
   }
 
   public function format_voucher_text($voucher)
@@ -420,7 +653,7 @@ trait MembershipTraits
   }
 
   //SHORTCODE FOR DISPLAYING VOUCHERS
-  public function display_vouchers_info()
+  public function display_vouchers_info() //voucher
   {
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
