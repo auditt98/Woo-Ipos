@@ -196,6 +196,25 @@ trait MembershipTraits
     }
   }
 
+  public function get_ipos_user()
+  {
+    $api_key = get_option('woo_ipos_api_key_setting');
+    $pos_parent = get_option('woo_ipos_pos_parent_setting');
+    $current_user = wp_get_current_user();
+    $current_user_login = $current_user->user_login;
+    $get_member_info_url = 'membership_detail';
+    $get_member_info_method = 'GET';
+    $query_params = array(
+      'access_token' => $api_key,
+      'pos_parent' => $pos_parent,
+      'user_id' => $current_user_login
+    );
+
+    $response = $this->call_api($get_member_info_url, $get_member_info_method, array('Content-Type: application/json'), "", $query_params);
+    $customer = $response->data;
+    return $customer;
+  }
+
 
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info() // thong tin tai khoan
@@ -634,20 +653,14 @@ tr:nth-child(odd) {
       // Compare the date_end values
       $dateComparison = $endDateA <=> $endDateB;
 
-      // Handle expired coupons
-      if ($endDateA < new DateTime() && $endDateB < new DateTime()) {
-        // Both coupons are expired, sort by date_end
-        return $dateComparison;
-      } elseif ($endDateA < new DateTime()) {
-        // Only $a is expired, move $b ahead
-        return 1;
-      } elseif ($endDateB < new DateTime()) {
-        // Only $b is expired, move $a ahead
-        return -1;
-      }
-
       // Neither coupon is expired, sort by date_end
       return $dateComparison;
+    });
+
+    //remove vouchers that are expired
+    $data = array_filter($data, function ($voucher) {
+      $endDate = new DateTime($voucher->date_end);
+      return $endDate >= new DateTime();
     });
     return $data;
   }

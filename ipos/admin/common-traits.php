@@ -39,6 +39,28 @@ trait CommonTraits
       'wp_data' => 'option'
     );
 
+    $pos_id_csb_thaiha = array(
+      'type'      => 'input',
+      'subtype'   => 'text',
+      'id'    => 'woo_ipos_pos_id_csb_thaiha_setting',
+      'name'      => 'woo_ipos_pos_id_csb_thaiha_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
+    $pos_id_csb_trunghoa = array(
+      'type'      => 'input',
+      'subtype'   => 'text',
+      'id'    => 'woo_ipos_pos_id_csb_trunghoa_setting',
+      'name'      => 'woo_ipos_pos_id_csb_trunghoa_setting',
+      'required' => 'true',
+      'get_options_list' => '',
+      'value_type' => 'normal',
+      'wp_data' => 'option'
+    );
+
     $pos_parent_args = array(
       'type'      => 'input',
       'subtype'   => 'text',
@@ -91,6 +113,24 @@ trait CommonTraits
       'woo_ipos_general_section',
       $ga_property_id_args
     );
+    
+    add_settings_field(
+      'woo_ipos_pos_id_csb_thaiha_setting',
+      'POS ID CSB Thai Ha',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $pos_id_csb_thaiha
+    ); 
+
+    add_settings_field(
+      'woo_ipos_pos_id_csb_trunghoa_setting',
+      'POS ID CSB Thai Ha',
+      array($this, 'woo_ipos_render_settings_field'),
+      'woo_ipos_general_settings',
+      'woo_ipos_general_section',
+      $pos_id_csb_trunghoa
+    );
 
     add_settings_field(
       'woo_ipos_modify_registration_setting',
@@ -131,6 +171,16 @@ trait CommonTraits
     register_setting(
       'woo_ipos_general_settings',
       'woo_ipos_api_key_setting',
+    );
+
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_pos_id_csb_thaiha_setting',
+    );
+
+    register_setting(
+      'woo_ipos_general_settings',
+      'woo_ipos_pos_id_csb_trunghoa_setting',
     );
 
     register_setting(
