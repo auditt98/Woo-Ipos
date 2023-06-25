@@ -263,6 +263,7 @@ trait OrderTraits
       $response = $this->call_api($check_voucher_url, $check_voucher_method, array('Content-Type: application/json'), json_encode($request), $query_params);
       session_start();
       $_SESSION['voucher_response'] = serialize($response);
+      $_SESSION['voucher_code'] = $voucherId;
       // $cart->calculate_totals();
       WC()->cart->calculate_totals();
       wp_send_json_success($response);
@@ -396,8 +397,11 @@ trait OrderTraits
     }, $order->get_fees());
   }
 
-  public function test_order($attr)
+  public function handle_logged_in_order($id)
   {
+    //CONST
+    $csb_thaiha_pos_id = get_option('woo_ipos_pos_id_csb_thaiha_setting');
+    $csb_trunghoa_pos_id = get_option('woo_ipos_pos_id_csb_trunghoa_setting');
     //CONST
     $csb_thaiha_pos_id = get_option('woo_ipos_pos_id_csb_thaiha_setting');
     $csb_trunghoa_pos_id = get_option('woo_ipos_pos_id_csb_trunghoa_setting');
@@ -422,16 +426,6 @@ trait OrderTraits
     $order_request['return_data'] = 'full';
     $order_request['is_estimate'] = 0;
 
-    //TEST CODE TO GET ORDER ID
-    $attr = shortcode_atts(array(
-      'id' => 0
-    ), $attr);
-    $id = $attr['id'];
-
-    // get order from id
-    if (!$id || $id == 0) {
-      return 'No order id';
-    }
     $order = wc_get_order($id);
     $order_request['foodbook_code'] = $id;
 
@@ -460,8 +454,10 @@ trait OrderTraits
       $order_request['order_type'] = 'DELIAT';
       $order_request['pos_id'] = $featured_pos['delivery'];
       $order_request['ship_price_real'] = $order_data['total'];
+      $order_request['to_address'] = $order_data['billing']['address_1'];
     } else {
       $order_request['order_type'] = 'PICK';
+      $order_request['to_address'] = $order_data['shipping_method']['pickup_location'];
       if (strpos($order_data['shipping_method']['pickup_location'], '276') !== false) {
         $order_request['pos_id'] = $csb_thaiha_pos_id;
       } else {
@@ -470,9 +466,138 @@ trait OrderTraits
     }
     //HANDLE NOTE
     $order_request['note'] = $order_data['customer_note'];
-    //HANDLE ADDRESS
-    $order_request['to_address'] = $order_data['billing']['address_1'];
-    return json_encode($order_data);
+
+    //HANDLE FEES (DISCOUNT)
+    $voucher_code = WC()->session->get('voucher_code');
+    if ($voucher_code) {
+      $order_request['coupon_log_id'] = $voucher_code;
+    }
+    //loop through order_fees
+    $fee_total = 0;
+    foreach ($order_data['order_fees'] as $fee) {
+      //convert $fee['total'] to int and make it absolute
+      $fee_line = absint($fee['total']);
+      $fee_total += $fee_line;
+    }
+    //convert shipping total to int
+    $shipping_total = absint($order_data['shipping_total']);
+    $total = absint($order_data['total']);
+    $real_total = $total - $shipping_total + $fee_total;
+    //SET ORDER REQUEST TOTAL
+    $order_request['amount'] = $real_total;
+    $order_request['total_amount'] = $total;
+
+    //HANDLE PAYMENT INFO
+    $payment_info = array();
+    if ($order_data['payment_method'] == 'cod') {
+      $payment_info['Payment_Method'] = 'PAYMENT_ON_DELIVERY';
+      $payment_info['Amount'] = 0;
+    } else {
+      //onepay
+      $payment_info['Amount'] = $total;
+      $payment_info['Payment_Info'] = 'ONEPAY'; //ma giao dich
+    }
+
+    $order_request['PaymentInfo'] = $payment_info;
+
+    //HANDLE BOOKING INFO
+    $booking_info = array();
+
+    //find meta_data with key = '_billing_wooccm13'
+    foreach ($order_data['meta_data'] as $key => $meta) {
+      if ($meta->key == '_billing_wooccm13') {
+        $originalValue = $meta->value;
+        $dateTime = DateTime::createFromFormat('Y/m/d H:i', $originalValue);
+        $formattedValue = $dateTime->format('Y-m-d H:i:s');
+        //set $booking_info
+        $date = date('Y-m-d 00:00:00', strtotime($formattedValue));
+        $hour = date('H', strtotime($formattedValue));
+        $minute = date('i', strtotime($formattedValue));
+        $booking_info['Book_Date'] = $date;
+        $booking_info['Hour'] = $hour;
+        $booking_info['Minute'] = $minute;
+        $booking_info['Number_People'] = -1;
+      }
+    }
+    $order_request['Booking_Info'] = $booking_info;
+
+    //handle order_items
+    //   {
+    //     "Item_Type_Id": "DU",               
+    //     "Item_Id": "SU04",              //id món ăn trên hệ thống POS
+    //     "Item_Name": "Caramel Macchiato Đá (S)",    //tên món ăn
+    //     "Price": 55000,                 //giá 1 món
+    //     "Quantity": 1,                  //số lượng
+    //     "Note": "[CMI02] Caramel Machiato (ice)",   //ghi chú trên món
+    //     "Discount":0.1,             //giảm giá % (nếu có) mặc định = 0
+    //     "Foc": 0,                   //nếu có giảm giá thì foc=1. Mặc định = 0
+    //     "Package_Id": "",               //option
+    //     "Parent_Id": "",
+    // },
+    $order_item = array();
+
+    //loop through order_data['order_items']
+    foreach ($order_data['order_items'] as $key => $order_data_item) {
+      $order_item = array();
+
+      $product_id = $order_item['product_id'];
+      $variation_id = $order_item['variation_id'];
+      //if variation_id is not null and not 0
+      if ($variation_id && $variation_id != 0) {
+        $product = wc_get_product($variation_id);
+      } else {
+        $product = wc_get_product($product_id);
+      }
+      $sku = $product->get_sku();
+      //split sku by -
+      $sku_arr = explode('-', $sku);
+      $item_type_id = $sku_arr[0];
+      $item_id = $sku_arr[1];
+      $order_item['Item_Type_Id'] = $item_type_id;
+      $order_item['Item_Id'] = $item_id;
+      //replace </span> with empty string
+      $order_item['Item_Name'] = str_replace('</span>', '', $order_data_item['name']);
+      $order_item['Quantity'] = $order_data_item['quantity'];
+      //loop through meta_data
+      foreach ($order_data_item['meta_data'] as $key => $meta) {
+        # code...
+      }
+
+      // Parent_Id
+    }
+
+
+
+    $test_data = array(
+      'order_id' => $id,
+      'order_data' => $order_data,
+      'order_request' => $order_request
+    );
+    return json_encode($test_data);
+  }
+
+  public function handle_logged_out_order($id)
+  {
+  }
+
+  public function test_order($attr)
+  {
+    //TEST CODE TO GET ORDER ID
+    $attr = shortcode_atts(array(
+      'id' => 0
+    ), $attr);
+    $id = $attr['id'];
+
+    // get order from id
+    if (!$id || $id == 0) {
+      return 'No order id';
+    }
+    //check if user is logged in 
+    if (!is_user_logged_in()) {
+      return $this->handle_logged_out_order($id);
+    } else {
+      return $this->handle_logged_in_order($id);
+    }
   }
 
   public function parse_order_shipping_method($order_data)

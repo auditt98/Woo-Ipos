@@ -219,6 +219,7 @@ trait MembershipTraits
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info()
   {
+    return "";
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
     $current_user = wp_get_current_user();
@@ -435,6 +436,7 @@ trait MembershipTraits
   //SHORTCODE FOR DISPLAYING VOUCHERS
   public function display_vouchers_info()
   {
+    return "";
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
     $current_user = wp_get_current_user();

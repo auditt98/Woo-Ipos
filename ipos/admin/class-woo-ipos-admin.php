@@ -78,7 +78,7 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_before_checkout_form', array($this, 'add_vouchers_to_checkout_form'));
 
 		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
-		add_shortcode('woo_ipos_customer_vouchers', array($this, 'display_vouchers_info'));
+		// add_shortcode('woo_ipos_customer_vouchers', array($this, 'display_vouchers_info'));
 		add_shortcode('test', array($this, 'test'));
 		add_shortcode('test_order', array($this, 'test_order'));
 
