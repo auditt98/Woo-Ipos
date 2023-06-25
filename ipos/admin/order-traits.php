@@ -398,59 +398,104 @@ trait OrderTraits
 
   public function test_order($attr)
   {
+    //CONST
+    $csb_thaiha_pos_id = get_option('woo_ipos_pos_id_csb_thaiha_setting');
+    $csb_trunghoa_pos_id = get_option('woo_ipos_pos_id_csb_trunghoa_setting');
+
+    //SETUP API CALLS
+    $order_request = array();
+    $api_key = get_option('woo_ipos_api_key_setting');
+    $pos_parent = get_option('woo_ipos_pos_parent_setting');
+
+    $order_request['pos_parent'] = $pos_parent;
+    $order_request['created_by'] = 'API';
+
+    $featured_pos = $this->get_featured_pos();
+
+    //GET CURRENT USER
+    $current_user = wp_get_current_user();
+    $current_user_login = $current_user->user_login;
+
+    $order_request['user_id'] = $current_user_login;
+    $ipos_customer = $this->get_ipos_user();
+    $order_request['username'] = $ipos_customer->name;
+    $order_request['return_data'] = 'full';
+    $order_request['is_estimate'] = 0;
+
+    //TEST CODE TO GET ORDER ID
     $attr = shortcode_atts(array(
       'id' => 0
     ), $attr);
     $id = $attr['id'];
+
     // get order from id
     if (!$id || $id == 0) {
       return 'No order id';
     }
     $order = wc_get_order($id);
+    $order_request['foodbook_code'] = $id;
+
     $order_data = $order->get_data(); // The Order data
     $order_items_data = array_map(function ($item) {
       return $item->get_data();
     }, $order->get_items());
-    $order_data['order_items'] = $order_items_data;
-
     $order_fee_data = array_map(function ($item) {
       return $item->get_data();
     }, $order->get_fees());
+    $order_data['order_items'] = $order_items_data;
     $order_data['order_fees'] = $order_fee_data;
-
-    // $order_line_items = array_map(function ($item) {
-    //   return $item->get_data();
-    // }, $order->get_line_items());
-    // $order_data['order_line_items'] = $order_line_items;
-
 
     $order_shipping_lines = array_map(function ($item) {
       return $item->get_data();
     }, $order->get_shipping_methods());
+    //parse shipping lines
     $order_data['order_shipping_lines'] = $order_shipping_lines;
 
     //parse shipping method
+    $order_data['shipping_method'] = $this->parse_order_shipping_method($order_data);
 
+    //handle order shipping logic
+    //if deli
+    if ($order_data['shipping_method']['is_delivery']) {
+      $order_request['order_type'] = 'DELIAT';
+      $order_request['pos_id'] = $featured_pos['delivery'];
+      $order_request['ship_price_real'] = $order_data['total'];
+    } else {
+      $order_request['order_type'] = 'PICK';
+      if (strpos($order_data['shipping_method']['pickup_location'], '276') !== false) {
+        $order_request['pos_id'] = $csb_thaiha_pos_id;
+      } else {
+        $order_request['pos_id'] = $csb_trunghoa_pos_id;
+      }
+    }
+    //HANDLE NOTE
+    $order_request['note'] = $order_data['customer_note'];
+    //HANDLE ADDRESS
+    $order_request['to_address'] = $order_data['billing']['address_1'];
     return json_encode($order_data);
   }
 
-  public function parse_order_shipping_method($order_data) {
-    $is_delivery = false;
-    $pickup_location = '';
-    
-    //create array
+  public function parse_order_shipping_method($order_data)
+  {
     $shipping_method = array(
       'is_delivery' => false,
-      'pickup_location' => ''
+      'pickup_location' => '',
+      'total' => 0
     );
-
-
-    //loop through order_shipping_lines
     foreach ($order_data['order_shipping_lines'] as $shipping_line) {
       $shipping_method_title = $shipping_line['method_title'];
-
+      if (strpos($shipping_method_title, 'Delivery') !== false) {
+        $shipping_method['is_delivery'] = true;
+        $shipping_method['pickup_location'] = '';
+        //parse to number
+        $shipping_method['total'] = (int) $shipping_line['total'];
+      }
+      if (strpos($shipping_method_title, 'Pickup') !== false) {
+        $shipping_method['is_delivery'] = false;
+        $shipping_method['pickup_location'] = explode('-', $shipping_method_title)[1];
+      }
     }
-
+    return $shipping_method;
   }
 
   public function test()
