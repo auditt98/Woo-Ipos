@@ -1204,5 +1204,417 @@
       "Minute": "34",
       "Number_People": -1
     }
+  },
+  "e": {
+    "order_id": "14565",
+    "order_data": {
+      "id": 14565,
+      "parent_id": 0,
+      "status": "processing",
+      "currency": "VND",
+      "version": "7.8.0",
+      "prices_include_tax": false,
+      "date_created": {
+        "date": "2023-06-26 06:22:43.000000",
+        "timezone_type": 1,
+        "timezone": "+00:00"
+      },
+      "date_modified": {
+        "date": "2023-06-26 06:22:44.000000",
+        "timezone_type": 1,
+        "timezone": "+00:00"
+      },
+      "discount_total": "0",
+      "discount_tax": "0",
+      "shipping_total": "25120",
+      "shipping_tax": "0",
+      "cart_tax": "0",
+      "total": "2460120",
+      "total_tax": "0",
+      "customer_id": 18401,
+      "order_key": "wc_order_4KKnNZIvXVXRx",
+      "billing": {
+        "first_name": "Việt",
+        "last_name": "Anh",
+        "company": "",
+        "address_1": "P103-TT Ban Đối Ngoại, Ngọc Khánh, Ba Đình",
+        "address_2": "",
+        "city": "",
+        "state": "",
+        "postcode": "",
+        "country": "VN",
+        "email": "vietanh8i1998@gmail.com",
+        "phone": "84326373667"
+      },
+      "shipping": {
+        "first_name": "",
+        "last_name": "",
+        "company": "",
+        "address_1": "",
+        "address_2": "",
+        "city": "",
+        "state": "",
+        "postcode": "",
+        "country": "",
+        "phone": ""
+      },
+      "payment_method": "cod",
+      "payment_method_title": "Thanh toán bằng tiền mặt",
+      "transaction_id": "",
+      "customer_ip_address": "118.70.236.74",
+      "customer_user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+      "created_via": "checkout",
+      "customer_note": "",
+      "date_completed": null,
+      "date_paid": null,
+      "cart_hash": "7439446c78cfc2ae87be32f0d932044e",
+      "order_stock_reduced": true,
+      "download_permissions_granted": true,
+      "new_order_email_sent": true,
+      "recorded_sales": true,
+      "recorded_coupon_usage_counts": true,
+      "number": "14565",
+      "meta_data": [
+        {
+          "id": 36647,
+          "key": "_billing_wooccm12",
+          "value": "1"
+        },
+        {
+          "id": 36648,
+          "key": "_billing_wooccm11",
+          "value": "Delivery - Giao tận nơi (chỉ áp dụng trong khu vực nội thành Hà Nội)"
+        },
+        {
+          "id": 36649,
+          "key": "_billing_wooccm13",
+          "value": "2023/06/23 20:34"
+        },
+        {
+          "id": 36650,
+          "key": "is_vat_exempt",
+          "value": "no"
+        },
+        {
+          "id": 36651,
+          "key": "trp_language",
+          "value": "vi"
+        },
+        {
+          "id": 36660,
+          "key": "pewc_product_extra_id",
+          "value": "14568"
+        },
+        {
+          "id": 36661,
+          "key": "pewc_uploaded_files",
+          "value": []
+        },
+        {
+          "id": 36681,
+          "key": "_ga_tracked",
+          "value": "1"
+        }
+      ],
+      "line_items": {
+        "66": {},
+        "67": {},
+        "68": {}
+      },
+      "tax_lines": [],
+      "shipping_lines": {
+        "69": {}
+      },
+      "fee_lines": [],
+      "coupon_lines": [],
+      "order_items": {
+        "66": {
+          "id": 66,
+          "order_id": 14565,
+          "name": "Pon Huge Brunch Bag",
+          "product_id": 14108,
+          "variation_id": 0,
+          "quantity": 1,
+          "tax_class": "",
+          "subtotal": "750000",
+          "subtotal_tax": "0",
+          "total": "750000",
+          "total_tax": "0",
+          "taxes": {
+            "total": [],
+            "subtotal": []
+          },
+          "meta_data": [
+            {
+              "id": 627,
+              "key": "_Classic Butter Brioche",
+              "value": "</span> 0 ₫</span></span>"
+            },
+            {
+              "id": 628,
+              "key": "_Truffle Mushroom & Camembert Brioche",
+              "value": "</span> 0 ₫</span></span>"
+            },
+            {
+              "id": 629,
+              "key": "product_extras",
+              "value": {
+                "product_id": 14108,
+                "title": "Pon Huge Brunch Bag",
+                "groups": {
+                  "14109": {
+                    "14110": {
+                      "type": "checkbox",
+                      "label": "Classic Butter Brioche",
+                      "id": "pewc_group_14109_14110",
+                      "group_id": "14109",
+                      "field_id": "14110",
+                      "price": 0,
+                      "value": "__checked__",
+                      "flat_rate": [],
+                      "hidden": "",
+                      "price_visibility": "hidden",
+                      "value_without_price": "__checked__"
+                    },
+                    "14114": {
+                      "type": "checkbox",
+                      "label": "Truffle Mushroom & Camembert Brioche",
+                      "id": "pewc_group_14109_14114",
+                      "group_id": "14109",
+                      "field_id": "14114",
+                      "price": 0,
+                      "value": "__checked__",
+                      "flat_rate": [],
+                      "hidden": "",
+                      "price_visibility": "hidden"
+                    }
+                  }
+                },
+                "price_with_extras": 750000,
+                "original_price": 750000,
+                "aelia_currency": false
+              }
+            }
+          ]
+        },
+        "67": {
+          "id": 67,
+          "order_id": 14565,
+          "name": "Passion Fruit Mille Crepes - </span>Size 6",
+          "product_id": 13831,
+          "variation_id": 13832,
+          "quantity": 1,
+          "tax_class": "",
+          "subtotal": "635000",
+          "subtotal_tax": "0",
+          "total": "635000",
+          "total_tax": "0",
+          "taxes": {
+            "total": [],
+            "subtotal": []
+          },
+          "meta_data": [
+            {
+              "id": 639,
+              "key": "pa_size",
+              "value": "size-6"
+            },
+            {
+              "id": 640,
+              "key": "_Phụ kiện",
+              "value": "Set phụ kiện nến que 10.000 ₫</span></span>"
+            },
+            {
+              "id": 641,
+              "key": "product_extras",
+              "value": {
+                "product_id": 13831,
+                "title": "Passion Fruit Mille Crepes",
+                "groups": {
+                  "14221": {
+                    "14222": {
+                      "type": "select",
+                      "label": "Phụ kiện",
+                      "id": "pewc_group_14221_14222",
+                      "group_id": "14221",
+                      "field_id": 14222,
+                      "price": 10000,
+                      "value": "Set phụ kiện nến que",
+                      "flat_rate": [],
+                      "hidden": "",
+                      "price_visibility": "hidden",
+                      "value_without_price": "Set phụ kiện nến que"
+                    }
+                  }
+                },
+                "price_with_extras": 635000,
+                "original_price": 625000,
+                "aelia_currency": false
+              }
+            }
+          ]
+        },
+        "68": {
+          "id": 68,
+          "order_id": 14565,
+          "name": "Pon Celebration Bag",
+          "product_id": 14132,
+          "variation_id": 0,
+          "quantity": 1,
+          "tax_class": "",
+          "subtotal": "1050000",
+          "subtotal_tax": "0",
+          "total": "1050000",
+          "total_tax": "0",
+          "taxes": {
+            "total": [],
+            "subtotal": []
+          },
+          "meta_data": [
+            {
+              "id": 651,
+              "key": "_Chọn trà",
+              "value": "The Other Earl Grey 0 ₫</span></span>"
+            },
+            {
+              "id": 652,
+              "key": "_Chọn Bánh gato",
+              "value": "Tiramisu Mille Crepes 0 ₫</span></span>"
+            },
+            {
+              "id": 653,
+              "key": "product_extras",
+              "value": {
+                "product_id": 14132,
+                "title": "Pon Celebration Bag",
+                "groups": {
+                  "14133": {
+                    "14134": {
+                      "type": "radio",
+                      "label": "Chọn trà",
+                      "id": "pewc_group_14133_14134",
+                      "group_id": "14133",
+                      "field_id": "14134",
+                      "price": 0,
+                      "value": "The Other Earl Grey",
+                      "flat_rate": [],
+                      "hidden": "",
+                      "price_visibility": "hidden",
+                      "value_without_price": "The Other Earl Grey"
+                    }
+                  },
+                  "14137": {
+                    "14138": {
+                      "type": "radio",
+                      "label": "Chọn Bánh gato",
+                      "id": "pewc_group_14137_14138",
+                      "group_id": "14137",
+                      "field_id": "14138",
+                      "price": 0,
+                      "value": "Tiramisu Mille Crepes",
+                      "flat_rate": [],
+                      "hidden": "",
+                      "price_visibility": "hidden",
+                      "value_without_price": "Tiramisu Mille Crepes"
+                    }
+                  }
+                },
+                "price_with_extras": 1050000,
+                "original_price": 1050000,
+                "aelia_currency": false
+              }
+            }
+          ]
+        }
+      },
+      "order_fees": [],
+      "order_shipping_lines": {
+        "69": {
+          "id": 69,
+          "order_id": 14565,
+          "name": "Delivery - C'est Si Bon 276 Thái Hà, Ô Chợ Dừa, Đống Đa, Hà Nội",
+          "method_title": "Delivery - C'est Si Bon 276 Thái Hà, Ô Chợ Dừa, Đống Đa, Hà Nội",
+          "method_id": "wcsdm",
+          "instance_id": "13",
+          "total": "25120",
+          "total_tax": "0",
+          "taxes": {
+            "total": []
+          },
+          "meta_data": [
+            {
+              "id": 659,
+              "key": "api_response",
+              "value": {
+                "distance": "3.14",
+                "distance_text": "3.1 km",
+                "duration": "644",
+                "duration_text": "10 minutes"
+              }
+            },
+            {
+              "id": 660,
+              "key": "Mặt hàng",
+              "value": "Pon Huge Brunch Bag × 1, Passion Fruit Mille Crepes - Size 6 × 1, Pon Celebration Bag × 1"
+            }
+          ]
+        }
+      },
+      "shipping_method": {
+        "is_delivery": true,
+        "pickup_location": "",
+        "total": 25120
+      }
+    },
+    "order_request": {
+      "pos_parent": "SAOBANG",
+      "created_by": "API",
+      "user_id": "84987654444",
+      "username": "HOA LAN",
+      "return_data": "full",
+      "is_estimate": 0,
+      "foodbook_code": "14565",
+      "order_type": "DELIAT",
+      "pos_id": null,
+      "ship_price_real": "2460120",
+      "to_address": "P103-TT Ban Đối Ngoại, Ngọc Khánh, Ba Đình",
+      "note": "",
+      "amount": 2435000,
+      "total_amount": 2460120,
+      "PaymentInfo": {
+        "Payment_Method": "PAYMENT_ON_DELIVERY",
+        "Amount": 0
+      },
+      "Booking_Info": {
+        "Book_Date": "2023-06-23 00:00:00",
+        "Hour": "20",
+        "Minute": "34",
+        "Number_People": -1
+      }
+    },
+    "order_items": [
+      {
+        "Item_Type_Id": "",
+        "Item_Id": null,
+        "Item_Name": "Pon Huge Brunch Bag",
+        "Quantity": 1,
+        "Price": 750000
+      },
+      {
+        "Item_Type_Id": "CF",
+        "Item_Id": "BR09",
+        "Item_Name": "Passion Fruit Mille Crepes - Size 6",
+        "Quantity": 1,
+        "Price": 625000
+      },
+      {
+        "Item_Type_Id": "TYPEID",
+        "Item_Id": "STOREID",
+        "Item_Name": "Pon Celebration Bag",
+        "Quantity": 1,
+        "Price": 1050000
+      }
+    ],
+    "trace": []
   }
 }
