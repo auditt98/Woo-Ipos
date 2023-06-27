@@ -732,6 +732,9 @@ trait OrderTraits
     // Milky Milo
     // Strawberry Short Cake
     // Mango Fromage
+    // Smooth Chocolate
+    // Daisy Darling
+    // Vanilla Choux
 
     //---------------REPLACE THIS
     $pos_milky_mille_crepes = 'MMC16';
@@ -742,6 +745,9 @@ trait OrderTraits
     $pos_milky_milo = 'MMCWC16';
     $pos_strawberry_short_cake = 'SSCWC16';
     $pos_mango_fromage = 'MFWC16';
+    $pos_smooth_choc = 'SCWC14';
+    $pos_daisy_darling = 'DDW14';
+    $pos_vanilla_choux = 'VCWC14';
 
     $cake_result = array();
     $cake_result['Item_Type_Id'] = 'CAKE'; //---------------- REPLACE THIS
@@ -787,6 +793,21 @@ trait OrderTraits
       $cake_result['Item_Id'] = $pos_mango_fromage;
       $cake_result['Item_Name'] = 'Mango Fromage';
       $cake_result['Note'] = 'Mango Fromage';
+    }
+    if ($cake == 'Smooth Chocolate') {
+      $cake_result['Item_Id'] = $pos_smooth_choc;
+      $cake_result['Item_Name'] = 'Smooth Chocolate';
+      $cake_result['Note'] = 'Smooth Chocolate';
+    }
+    if ($cake == 'Daisy Darling') {
+      $cake_result['Item_Id'] = $pos_daisy_darling;
+      $cake_result['Item_Name'] = 'Daisy Darling';
+      $cake_result['Note'] = 'Daisy Darling';
+    }
+    if ($cake == 'Vanilla Choux') {
+      $cake_result['Item_Id'] = $pos_vanilla_choux;
+      $cake_result['Item_Name'] = 'Vanilla Choux';
+      $cake_result['Note'] = 'Vanilla Choux';
     }
     return $cake_result;
   }
@@ -1000,27 +1021,16 @@ trait OrderTraits
           }
           foreach ($groups as $key => $group_line) {
             foreach ($group_line as $gr_line => $group) {
-              if ($group['label'] == 'Chọn nến số thứ nhất') {
-                $candle_result = $this->handle_candle($group['value_without_price'], $group['price']);
-                array_push($order_item_children, $candle_result);
-              }
-              if ($group['label'] == 'Chọn nến số thứ 2') {
-                $candle_result = $this->handle_candle($group['value_without_price'], $group['price']);
-                array_push($order_item_children, $candle_result);
-              }
-              if ($group['label'] == 'Phụ kiện' && $group['value_without_price'] == 'Set phụ kiện nến que') {
-                $candle_result = $this->handle_candle($group['value_without_price'], $group['price']);
-              }
-              if ($group['label'] == 'Chọn trà') {
+              if ($group['label'] == 'Hộp trà') {
                 $tea_result = $this->handle_tea($group['value_without_price'], $item_id);
                 array_push($order_item_children, $tea_result);
               }
-              if ($group['label'] == 'Chọn Bánh gato') {
+              if ($group['label'] == 'Bánh wholecake') {
                 $wholecake_result = $this->handle_wholecake($group['value_without_price'], $item_id);
                 array_push($order_item_children, $wholecake_result);
               }
-              if ($group['label'] == 'Classic Butter Brioche' || $group['label'] == 'Strawberries & Ricotta Brioche' || $group['label'] == 'Truffle Mushroom & Camembert Brioche') {
-                $brioche_result = $this->handle_brioche($group['label'], $item_id);
+              if ($group['label'] == 'Vị bánh Brioche 1' || $group['label'] == 'Vị bánh Brioche 2') {
+                $brioche_result = $this->handle_brioche($group['value'], $item_id);
                 array_push($order_item_children, $brioche_result);
               }
             }
@@ -1042,13 +1052,13 @@ trait OrderTraits
     $query_params = array(
       'access_token' => $api_key
     );
-    // $test_data = array(
-    //   'order_id' => $id,
-    //   'order_data' => $order_data,
-    //   'order_request' => $order_request,
-    //   'order_items' => $order_items,
-    // );
-    return json_encode($order_request);
+    $test_data = array(
+      'order_id' => $id,
+      'order_data' => $order_data,
+      'order_request' => $order_request,
+      'order_items' => $order_items,
+    );
+    return json_encode($test_data);
   }
 
   public function test_order($attr)
