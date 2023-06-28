@@ -147,7 +147,7 @@ trait OrderTraits
         error_log('------------------' . $data->Coupon_Code . '------------------');
         $discount_amount = $data->Discount_Amount;
         $splittedName = explode("_", $data->voucher_campaign_name);
-        $label = $splittedName[0];
+        $label = $splittedName[0] . ' | Mã: ' . $data->Coupon_Code;
         $cart->add_fee($label, -$discount_amount);
       } else {
       }
@@ -379,217 +379,6 @@ trait OrderTraits
     }
   }
 
-  public function handle_new_order($id)
-  {
-    //CONST
-    $csb_thaiha_pos_id = get_option('woo_ipos_pos_id_csb_thaiha_setting');
-    $csb_trunghoa_pos_id = get_option('woo_ipos_pos_id_csb_trunghoa_setting');
-
-    //SETUP API CALLS
-    $order_request = array();
-
-    $pos_parent = get_option('woo_ipos_pos_parent_setting');
-
-    $order_request['pos_parent'] = $pos_parent;
-    $order_request['created_by'] = 'API';
-
-    $featured_pos = $this->get_featured_pos();
-
-    //GET CURRENT USER
-    $current_user = wp_get_current_user();
-    $current_user_login = $current_user->user_login;
-
-    $order_request['user_id'] = $current_user_login;
-    $ipos_customer = $this->get_ipos_user();
-    $order_request['username'] = $ipos_customer->name;
-    $order_request['return_data'] = 'full';
-    $order_request['is_estimate'] = 0;
-
-    $order = wc_get_order($id);
-    $order_request['foodbook_code'] = $id;
-
-    $order_data = $order->get_data(); // The Order data
-    $order_items_data = array_map(function ($item) {
-      return $item->get_data();
-    }, $order->get_items());
-    $order_fee_data = array_map(function ($item) {
-      return $item->get_data();
-    }, $order->get_fees());
-    $order_data['order_items'] = $order_items_data;
-    $order_data['order_fees'] = $order_fee_data;
-
-    $order_shipping_lines = array_map(function ($item) {
-      return $item->get_data();
-    }, $order->get_shipping_methods());
-    //parse shipping lines
-    $order_data['order_shipping_lines'] = $order_shipping_lines;
-
-    //parse shipping method
-    $order_data['shipping_method'] = $this->parse_order_shipping_method($order_data);
-
-    //handle order shipping logic
-    //if deli
-    if ($order_data['shipping_method']['is_delivery']) {
-      $order_request['order_type'] = 'DELIAT';
-      $order_request['pos_id'] = $csb_thaiha_pos_id;
-      $order_request['ship_price_real'] = $order_data['shipping_total'];
-      $order_request['to_address'] = $order_data['billing']['address_1'];
-    } else {
-      $order_request['order_type'] = 'PICK';
-      $order_request['to_address'] = $order_data['shipping_method']['pickup_location'];
-      if (strpos($order_data['shipping_method']['pickup_location'], '276') !== false) {
-        $order_request['pos_id'] = $csb_thaiha_pos_id;
-      } else {
-        $order_request['pos_id'] = $csb_trunghoa_pos_id;
-      }
-    }
-    //HANDLE NOTE
-    $order_request['note'] = $order_data['customer_note'];
-
-    //HANDLE FEES (DISCOUNT)
-    $voucher_code = WC()->session->get('voucher_code');
-    if ($voucher_code) {
-      $order_request['coupon_log_id'] = $voucher_code;
-    }
-    //loop through order_fees
-    $fee_total = 0;
-    foreach ($order_data['order_fees'] as $fee) {
-      //convert $fee['total'] to int and make it absolute
-      $fee_line = absint($fee['total']);
-      $fee_total += $fee_line;
-    }
-    //convert shipping total to int
-    $shipping_total = absint($order_data['shipping_total']);
-    $total = absint($order_data['total']);
-    $real_total = $total - $shipping_total + $fee_total;
-    //SET ORDER REQUEST TOTAL
-    $order_request['amount'] = $real_total;
-    $order_request['total_amount'] = $total;
-
-    //HANDLE PAYMENT INFO
-    $payment_info = array();
-    if ($order_data['payment_method'] == 'cod') {
-      $payment_info['Payment_Method'] = 'PAYMENT_ON_DELIVERY';
-      $payment_info['Amount'] = 0;
-    } else {
-      //onepay
-      $payment_info['Amount'] = $total;
-      $payment_info['Payment_Info'] = 'ONEPAY'; //ma giao dich
-    }
-
-    $order_request['PaymentInfo'] = $payment_info;
-
-    //HANDLE BOOKING INFO
-    $booking_info = array();
-
-    //find meta_data with key = '_billing_wooccm13'
-    foreach ($order_data['meta_data'] as $key => $meta) {
-      if ($meta->key == '_billing_wooccm13') {
-        $originalValue = $meta->value;
-        $dateTime = DateTime::createFromFormat('Y/m/d H:i', $originalValue);
-        $formattedValue = $dateTime->format('Y-m-d H:i:s');
-        //set $booking_info
-        $date = date('Y-m-d 00:00:00', strtotime($formattedValue));
-        $hour = date('H', strtotime($formattedValue));
-        $minute = date('i', strtotime($formattedValue));
-        $booking_info['Book_Date'] = $date;
-        $booking_info['Hour'] = $hour;
-        $booking_info['Minute'] = $minute;
-        $booking_info['Number_People'] = -1;
-      }
-    }
-    $order_request['Booking_Info'] = $booking_info;
-
-    //handle order_items
-    //   {
-    //     "Item_Type_Id": "DU",               
-    //     "Item_Id": "SU04",              //id món ăn trên hệ thống POS
-    //     "Item_Name": "Caramel Macchiato Đá (S)",    //tên món ăn
-    //     "Price": 55000,                 //giá 1 món
-    //     "Quantity": 1,                  //số lượng
-    //     "Note": "[CMI02] Caramel Machiato (ice)",   //ghi chú trên món
-    //     "Discount":0.1,             //giảm giá % (nếu có) mặc định = 0
-    //     "Foc": 0,                   //nếu có giảm giá thì foc=1. Mặc định = 0
-    //     "Package_Id": "",               //option
-    //     "Parent_Id": "",
-    // },
-    $order_items = array();
-    $order_item_children = array();
-    foreach ($order_data['order_items'] as $key => $order_data_item) {
-      $order_item = array();
-      $product_id = $order_data_item['product_id'];
-      $variation_id = $order_data_item['variation_id'];
-      $product = array();
-      if ($variation_id && $variation_id != 0) {
-        $product = wc_get_product($variation_id);
-      } else {
-        $product = wc_get_product($product_id);
-      }
-      $sku = $product->get_sku();
-      $sku_arr = explode('|', $sku);
-      $item_type_id = $sku_arr[0];
-      $item_id = $sku_arr[1];
-      $order_item['Item_Type_Id'] = $item_type_id;
-      $order_item['Item_Id'] = $item_id;
-      $order_item['Item_Name'] = str_replace('</span>', '', $order_data_item['name']);
-      $order_item['Quantity'] = $order_data_item['quantity'];
-      $order_item['Price'] = $order_data_item['total'];
-      foreach ($order_data_item['meta_data'] as $key => $meta) {
-        if ($meta->key == 'product_extras') {
-          $groups = $meta->value['groups'];
-
-          if (isset($meta->value['original_price']) && $meta->value['original_price'] != null) {
-            $order_item['Price'] = absint($meta->value['original_price']);
-          }
-          foreach ($groups as $key => $group_line) {
-            foreach ($group_line as $gr_line => $group) {
-              if ($group['label'] == 'Chọn nến số thứ nhất') {
-                $candle_result = $this->handle_candle($group['value_without_price'], $group['price']);
-                array_push($order_item_children, $candle_result);
-              }
-              if ($group['label'] == 'Chọn nến số thứ 2') {
-                $candle_result = $this->handle_candle($group['value_without_price'], $group['price']);
-                array_push($order_item_children, $candle_result);
-              }
-              if ($group['label'] == 'Phụ kiện' && $group['value_without_price'] == 'Set phụ kiện nến que') {
-                $candle_result = $this->handle_candle($group['value_without_price'], $group['price']);
-              }
-              if ($group['label'] == 'Chọn trà') {
-                $tea_result = $this->handle_tea($group['value_without_price'], $item_id);
-                array_push($order_item_children, $tea_result);
-              }
-              if ($group['label'] == 'Chọn Bánh gato') {
-                $wholecake_result = $this->handle_wholecake($group['value_without_price'], $item_id);
-                array_push($order_item_children, $wholecake_result);
-              }
-              if ($group['label'] == 'Classic Butter Brioche' || $group['label'] == 'Strawberries & Ricotta Brioche' || $group['label'] == 'Truffle Mushroom & Camembert Brioche') {
-                $brioche_result = $this->handle_brioche($group['label'], $item_id);
-                array_push($order_item_children, $brioche_result);
-              }
-            }
-          }
-        }
-      }
-      array_push($order_items, $order_item);
-      foreach ($order_item_children as $order_item_child) {
-        array_push($order_items, $order_item_child);
-      }
-      $order_item_children = array();
-    }
-
-    $order_request['order_data_item'] = $order_items;
-
-    //calls api 
-    $pos_order_online_url = 'order_online';
-    $pos_order_online_method = 'POST';
-    $api_key = get_option('woo_ipos_api_key_setting');
-    $query_params = array(
-      'access_token' => $api_key
-    );
-    $response = $this->call_api($pos_order_online_url, $pos_order_online_method, array('Content-Type: application/json'), json_encode($order_request), $query_params);
-    return $response;
-  }
-
   public function handle_candle($candle, $price)
   {
     // $pos_nen_que = 'PK0016';
@@ -698,7 +487,7 @@ trait OrderTraits
     $pos_a_walk_on_grass = 'AWOGCB';
 
     $tea_result = array();
-    $tea_result['Item_Type_Id'] = 'TEA'; //---------------- REPLACE THIS
+    $tea_result['Item_Type_Id'] = 'CEB'; //---------------- REPLACE THIS
     $tea_result['Quantity'] = 1;
     $tea_result['Price'] = 0;
     $tea_result['Parent_Id'] = $parent_id;
@@ -750,7 +539,7 @@ trait OrderTraits
     $pos_vanilla_choux = 'VCWC14';
 
     $cake_result = array();
-    $cake_result['Item_Type_Id'] = 'CAKE'; //---------------- REPLACE THIS
+    $cake_result['Item_Type_Id'] = 'WC'; //---------------- REPLACE THIS
     $cake_result['Quantity'] = 1;
     $cake_result['Price'] = 0;
     $cake_result['Parent_Id'] = $parent_id;
@@ -901,6 +690,7 @@ trait OrderTraits
     }, $order->get_shipping_methods());
     //parse shipping lines
     $order_data['order_shipping_lines'] = $order_shipping_lines;
+    $order_request['adapt_to_online'] = 1;
 
     //parse shipping method
     $order_data['shipping_method'] = $this->parse_order_shipping_method($order_data);
@@ -908,9 +698,9 @@ trait OrderTraits
     //handle order shipping logic
     //if deli
     if ($order_data['shipping_method']['is_delivery']) {
-      $order_request['order_type'] = 'DELIAT';
+      $order_request['order_type'] = 'DELI';
       $order_request['pos_id'] = $csb_thaiha_pos_id;
-      $order_request['ship_price_real'] = $order_data['total'];
+      $order_request['ship_price_real'] = $order_data['shipping_total'];
       $order_request['to_address'] = $order_data['billing']['address_1'];
     } else {
       $order_request['order_type'] = 'PICK';
@@ -921,20 +711,24 @@ trait OrderTraits
         $order_request['pos_id'] = $csb_trunghoa_pos_id;
       }
     }
-    //HANDLE NOTE
-    $order_request['note'] = $order_data['customer_note'] ? $order_data['customer_note'] : '';
 
     //HANDLE FEES (DISCOUNT)
-    $voucher_code = WC()->session->get('voucher_code');
-    if ($voucher_code) {
-      $order_request['coupon_log_id'] = $voucher_code;
-    }
+    $voucher_code = '';
+
     //loop through order_fees
     $fee_total = 0;
     foreach ($order_data['order_fees'] as $fee) {
+      $fee_name = $fee['name'];
+      $pattern = '/\| Mã: (\w+)/';
+      if (preg_match($pattern, $fee_name, $matches)) {
+        $voucher_code = $matches[1]; // Extract the code from the matched pattern
+      }
       //convert $fee['total'] to int and make it absolute
       $fee_line = absint($fee['total']);
       $fee_total += $fee_line;
+    }
+    if ($voucher_code) {
+      $order_request['coupon_log_id'] = $voucher_code;
     }
     //convert shipping total to int
     $shipping_total = absint($order_data['shipping_total']);
@@ -977,7 +771,9 @@ trait OrderTraits
       }
     }
     $order_request['booking_info'] = $booking_info;
-
+    //HANDLE NOTE
+    $order_request['note'] = $order_data['customer_note'] ? $order_data['customer_note'] : '';
+    $order_request['note'] = $order_request['note'] . ' --- Giao lúc: ' . $booking_info['Book_Date'] . ' ' . $booking_info['Hour'] . ':' . $booking_info['Minute'];
     //handle order_items
     //   {
     //     "Item_Type_Id": "DU",               
@@ -1045,6 +841,8 @@ trait OrderTraits
     }
 
     $order_request['order_data_item'] = $order_items;
+    $voucher_code = isset($_SESSION['voucher_code']) ? $_SESSION['voucher_code'] : 'null';
+
     //calls api 
     $pos_order_online_url = 'order_online';
     $pos_order_online_method = 'POST';
@@ -1057,6 +855,7 @@ trait OrderTraits
       'order_data' => $order_data,
       'order_request' => $order_request,
       'order_items' => $order_items,
+      'voucher_code' => $voucher_code
     );
     return json_encode($test_data);
   }
