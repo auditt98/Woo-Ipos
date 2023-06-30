@@ -219,7 +219,7 @@ trait MembershipTraits
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info() // thong tin tai khoan
   {
-    return "";
+    // return "";
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
     $current_user = wp_get_current_user();
@@ -290,7 +290,19 @@ trait MembershipTraits
           <div class="membership_top--right">60 pon</div>
         </div>
 
-        <div class="membership_detail">
+        <div class="progress-bar">
+          <div class="progress-bar_remaining">
+            <p>Còn <span id="progress_remaining">40</span> pon để thăng hạng</p>
+          </div>
+          <div class="progress-bar_current">
+            <div class="range-slider">
+              <div id="tooltip"></div>
+              <input id="range" type="range" step="1" value="60" min="0" max="100">
+          </div>
+          </div>
+        </div>
+
+        <!-- <div class="membership_detail">
           <div onclick="toggleTable()">Thông tin chi tiết</div>
 
           <div class="membership_detail--table" id="membership_table">
@@ -317,7 +329,8 @@ trait MembershipTraits
               </tr>
             </table>
           </div>
-        </div>
+        </div> -->
+
       </div>
 
       <div class="membership_content">
@@ -372,7 +385,7 @@ trait MembershipTraits
   color: white;
   padding: 16px;
   font-weight: 700;
-  height: 120px;
+  height: 140px;
   transition: height .5s;
 }
 
@@ -512,9 +525,131 @@ tr:nth-child(odd) {
 .oudate_c > img {
   border: 2px solid #53648a;
 }
+
+.progress-bar_remaining {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 13px;
+}
+
+.progress-bar_current {
+  position: relative;
+}
+
+/* range slider */
+.range-slider {
+  width: 100%;
+  /* margin: 0 auto; */
+  position: relative;
+  /* margin-top: 2.5rem; */
+  /* margin-bottom: 2rem; */
+}
+
+#range {
+  -webkit-appearance: none;
+  width: 100%;
+  border-radius: 1rem;
+}
+#range:focus {
+  outline: none;
+}
+
+#range::before,
+#range::after {
+  position: absolute;
+  top: 2rem;
+  color: #333;
+  font-size: 14px;
+  line-height: 1;
+  padding: 3px 5px;
+  background-color: #53648a;
+  border-radius: 4px;
+}
+
+#range::before {
+  left: 0;
+  content: attr(data-min);
+}
+#range::after {
+  right: 0;
+  content: attr(data-max);
+}
+
+#range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 1rem;
+  cursor: pointer;
+  animate: 0.2s;
+  background: linear-gradient(
+    90deg,
+    #d3c3b1 var(--range-progress),
+    #dee4ec var(--range-progress)
+  );
+  border-radius: 1rem;
+}
+#range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: 0.25rem solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 255, 0.3);
+  border-radius: 50%;
+  background: #d3c3b1;
+  cursor: pointer;
+  height: 38px;
+  width: 38px;
+  transform: translateY(calc(-50% + 8px));
+}
+
+#tooltip {
+  position: absolute;
+  z-index: 100;
+  top: -0.125rem;
+}
+#tooltip span {
+  position: absolute;
+  pointer-events: none;
+  text-align: center;
+  display: block;
+  line-height: 1;
+  padding: 0.25rem 0.25rem;
+  margin-left: 0.225rem;
+  color: #fff;
+  font-size: 1rem;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+#tooltip span:before {
+  position: absolute;
+  content: '';
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  border-top-color: #d3c3b1;
+}
     </style>
 
 <script>
+
+const range = document.getElementById('range'),
+  tooltip = document.getElementById('tooltip'),
+  setValue = () => {
+    const newValue = Number(
+        ((range.value - range.min) * 100) / (range.max - range.min)
+      ),
+      newPosition = 16 - newValue * 0.38;
+    tooltip.innerHTML = `<span>${range.value}</span>`;
+    tooltip.style.left = `calc(${newValue}% + (${newPosition}px))`;
+    document.documentElement.style.setProperty(
+      '--range-progress',
+      `calc(${newValue}% + (${newPosition}px))`
+    );
+  };
+document.addEventListener('DOMContentLoaded', setValue);
+range.addEventListener('input', setValue);
+
+
     function toggleTable() {
       const table = document.getElementById('membership_table');
       const topId = document.getElementById('membership_top_id');
