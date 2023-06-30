@@ -636,25 +636,32 @@ tr:nth-child(odd) {
 
     $response = $this->call_api($get_member_vouchers_url, $get_member_vouchers_method, array('Content-Type: application/json'), "", $query_params);
     $data = $response->data;
-    //check if data is null, if it is, set it to empty array
     if (is_null($data)) {
       $data = array();
     }
     foreach ($data as $voucher) {
       $campaignName = $voucher->voucher_campaign_name;
-      $splittedName = explode("_", $campaignName);
-      $voucher->voucher_label = $splittedName[0];
-      $voucher->voucher_desc = $splittedName[1];
+      $voucher->voucher_label = $campaignName;
       $voucher->voucher_display_expiry = date('d/m/Y', strtotime($voucher->date_end));
+      $campaign_id = $voucher->voucher_campaign_id;
+      $get_campaign_url = 'campaigns';
+      $get_campaign_method = 'GET';
+      $query_params = array(
+        'access_token' => $api_key,
+        'pos_parent' => $pos_parent,
+        'campaign_id' => $campaign_id
+      );
+      $campaign_response = $this->call_api($get_campaign_url, $get_campaign_method, array('Content-Type: application/json'), "", $query_params);
+      $campaign_data = $campaign_response->data;
+      if ($campaign_data->count == 1) {
+        $voucher->voucher_desc = $campaign_data->campaigns[0]->voucher_description;
+      }
     }
     usort($data, function ($a, $b) {
       $endDateA = new DateTime($a->date_end);
       $endDateB = new DateTime($b->date_end);
-
-      // Compare the date_end values
       $dateComparison = $endDateA <=> $endDateB;
 
-      // Neither coupon is expired, sort by date_end
       return $dateComparison;
     });
 
