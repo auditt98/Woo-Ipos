@@ -215,6 +215,23 @@ trait MembershipTraits
     return $customer;
   }
 
+  public function get_membership_types()
+  {
+    $api_key = get_option('woo_ipos_api_key_setting');
+    $pos_parent = get_option('woo_ipos_pos_parent_setting');
+
+    $get_membership_type_url = 'get_membership_types';
+    $get_membership_type_method = 'GET';
+    $query_params = array(
+      'access_token' => $api_key,
+      'pos_parent' => $pos_parent
+    );
+
+    $response = $this->call_api($get_membership_type_url, $get_membership_type_method, array('Content-Type: application/json'), "", $query_params);
+    $memberships = $response->data;
+    return $memberships;
+  }
+
 
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info() // thong tin tai khoan
@@ -243,51 +260,33 @@ trait MembershipTraits
     $customer_membership_type = "";
     $customer_point = "";
     $customer_birthday = "";
+    $membership_types = array();
     if (is_user_logged_in()) {
       $customer_name = !empty($customer->name) ? $customer->name : "Chưa có thông tin";
       $customer_membership_type = !empty($customer->membership_type_name) ? $customer->membership_type_name : "Chưa có thông tin";
-      $customer_point = $customer->point;
+      $customer_point = floor($customer->point);
       $customer_birthday = !empty($customer->birthday) ? $this->convert_date_format($customer->birthday) : "Chưa có thông tin";
-      // $html =
-      //   "<table class=\"user-table\">"
-      //   .
-      //   "<tr>
-      //     <td>Họ tên</td>
-      //     <td>$customer_name</td>
-      //   </tr>"
-      //   .
-      //   "<tr>
-      //     <td>Số điện thoại</td>
 
-      //     <td>$current_user_login</td>
-      //   </tr>"
-      //   .
-      //   "<tr>
-      //     <td>Loại hội viên</td>
-      //     <td>$customer_membership_type</td>
-      //   </tr>"
-      //   .
-      //   "<tr>
-      //     <td>Điểm thành viên</td>
-      //     <td>$customer_point</td>
-      //   </tr>"
-      //   .
-      //   "<tr>
-      //     <td>Ngày sinh</td>
-      //     <td>$customer_birthday</td>
-      //   </tr>"
-      //   . "</table>";
+      $memberships = $this->get_membership_types();
+      $filtered_types = array_filter($memberships, function ($type) {
+        return $type->active == 1;
+      });
+      $membership_types = $filtered_types;
+      usort($membership_types, function ($a, $b) {
+        return $a->upgrade_amount - $b->upgrade_amount;
+      });
     }
 
   ?>
     <div class="membership_tab">
+      <div><?php echo json_encode($membership_types) ?></div>
       <div class="membership_top" id="membership_top_id">
         <div>
           <div class="membership_top--left">
             <div>hạng</div>
-            <div>pon</div>
+            <div><?php echo $customer_membership_type ?></div>
           </div>
-          <div class="membership_top--right">60 pon</div>
+          <div class="membership_top--right"><?php echo $customer_point ?> pon</div>
         </div>
 
         <div class="progress-bar">
@@ -298,7 +297,7 @@ trait MembershipTraits
             <div class="range-slider">
               <div id="tooltip"></div>
               <input id="range" type="range" step="1" value="60" min="0" max="100">
-          </div>
+            </div>
           </div>
         </div>
 
@@ -380,289 +379,292 @@ trait MembershipTraits
     </div>
 
     <style>
- .membership_top {
-  background-color: #53648a;
-  color: white;
-  padding: 16px;
-  font-weight: 700;
-  height: 140px;
-  transition: height .5s;
-}
+      .membership_top {
+        background-color: #53648a;
+        color: white;
+        padding: 16px;
+        font-weight: 700;
+        font-size: 17px;
+        height: 140px;
+        transition: height .5s;
+      }
 
-.membership_top > div:first-child {
-  display: flex;
-  justify-content: space-between;
-  text-transform: uppercase;
-}
+      .membership_top>div:first-child {
+        display: flex;
+        justify-content: space-between;
+        text-transform: uppercase;
+      }
 
-.membership_top--left > div:last-child {
-  font-size: 40px;
-  margin-top: 6px;
-}
+      .membership_top--left>div:last-child {
+        font-size: 40px;
+        margin-top: 6px;
+      }
 
-.membership_detail {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-}
+      .membership_detail {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+      }
 
-.membership_detail > div:first-child {
-  cursor: pointer;
-  border: 2px solid white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
+      .membership_detail>div:first-child {
+        cursor: pointer;
+        border: 2px solid white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+      }
 
-.membership_detail--table {
-  transition: opacity 1.5s ease-in-out;
-  opacity: 0;
-  height: 0;
-  overflow: hidden;
-  width: 100%;
-}
+      .membership_detail--table {
+        transition: opacity 1.5s ease-in-out;
+        opacity: 0;
+        height: 0;
+        overflow: hidden;
+        width: 100%;
+      }
 
-.active_table {
-  opacity: 1;
-  height: 100%;
-}
+      .active_table {
+        opacity: 1;
+        height: 100%;
+      }
 
-.extend_height {
-  height: 400px;
-}
+      .extend_height {
+        height: 400px;
+      }
 
-table {
-  width: 100%;
-}
+      table {
+        width: 100%;
+      }
 
-td,
-th {
-  border: 1px solid #dddddd;
-  text-align: left;
-  padding: 8px;
-}
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+      }
 
-tr:nth-child(even) {
-  background-color: #dddddd;
-  color: black;
-}
+      tr:nth-child(even) {
+        background-color: #dddddd;
+        color: black;
+      }
 
-tr:nth-child(odd) {
-  background-color: #a9a9a9;
-}
+      tr:nth-child(odd) {
+        background-color: #a9a9a9;
+      }
 
-.membership_content {
-  padding: 24px;
-  background-color: #f3f3f3;
-}
+      .membership_content {
+        padding: 24px;
+        background-color: #f3f3f3;
+      }
 
-.membership_content > div:first-child {
-  font-weight: 700;
-  font-size: 24px;
-  margin-bottom: 16px;
-  color: #434343;
-}
+      .membership_content>div:first-child {
+        font-weight: 700;
+        font-size: 24px;
+        margin-bottom: 16px;
+        color: #434343;
+      }
 
-.voucher_grid {
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-gap: 16px;
-}
+      .voucher_grid {
+        display: grid;
+        grid-template-columns: auto auto;
+        grid-gap: 16px;
+      }
 
-.voucher {
-  display: flex;
-  padding: 16px 0 16px 12px;
-  border-radius: 12px;
-  align-items: center;
-  cursor: default;
-}
+      .voucher {
+        display: flex;
+        padding: 16px 0 16px 12px;
+        border-radius: 12px;
+        align-items: center;
+        cursor: default;
+      }
 
-.voucher_icon > img {
-  width: 26px;
-  margin-right: 14px;
-  border-radius: 50%;
-}
+      .voucher_icon>img {
+        width: 26px;
+        margin-right: 14px;
+        border-radius: 50%;
+      }
 
-.voucher_content > div:first-child {
-  font-size: 18px;
-  font-weight: 700;
-}
+      .voucher_content>div:first-child {
+        font-size: 18px;
+        font-weight: 700;
+      }
 
-.voucher_content > div:last-child {
-  font-size: 14px;
-}
+      .voucher_content>div:last-child {
+        font-size: 14px;
+      }
 
-.valid {
-  background-color: #53648a;
-  color: white;
-  transition: all 0.5s ease-in-out;
-}
+      .valid {
+        background-color: #53648a;
+        color: white;
+        transition: all 0.5s ease-in-out;
+      }
 
-.valid_c > img {
-  border: 2px solid white;
-}
+      .valid_c>img {
+        border: 2px solid white;
+      }
 
-.valid:hover {
-  box-shadow: 20px 20px 50px 15px grey;
-  cursor: pointer;
-  transform: scale(1.1);
-}
+      .valid:hover {
+        box-shadow: 20px 20px 50px 15px grey;
+        cursor: pointer;
+        transform: scale(1.1);
+      }
 
-.tobe_valid {
-  background-color: #f2f2ec;
-  border-color: #53648a;
-  color: #53648a;
-  border: 2px solid #53648a;
-}
+      .tobe_valid {
+        background-color: #f2f2ec;
+        border-color: #53648a;
+        color: #53648a;
+        border: 2px solid #53648a;
+      }
 
-.oudate {
-  color: #53648a;
-  background-color: #f2f2ec;
-  border: 2px solid #53648a;
-  opacity: 0.3;
-}
+      .oudate {
+        color: #53648a;
+        background-color: #f2f2ec;
+        border: 2px solid #53648a;
+        opacity: 0.3;
+      }
 
-.oudate_c > img {
-  border: 2px solid #53648a;
-}
+      .oudate_c>img {
+        border: 2px solid #53648a;
+      }
 
-.progress-bar_remaining {
-  display: flex;
-  justify-content: flex-end;
-  font-size: 13px;
-}
+      .progress-bar_remaining {
+        display: flex;
+        justify-content: flex-end;
+        font-size: 13px;
+      }
 
-.progress-bar_current {
-  position: relative;
-}
+      .progress-bar_current {
+        position: relative;
+      }
 
-/* range slider */
-.range-slider {
-  width: 100%;
-  /* margin: 0 auto; */
-  position: relative;
-  /* margin-top: 2.5rem; */
-  /* margin-bottom: 2rem; */
-}
+      /* range slider */
+      .range-slider {
+        width: 100%;
+        /* margin: 0 auto; */
+        position: relative;
+        /* margin-top: 2.5rem; */
+        /* margin-bottom: 2rem; */
+      }
 
-#range {
-  -webkit-appearance: none;
-  width: 100%;
-  border-radius: 1rem;
-}
-#range:focus {
-  outline: none;
-}
+      #range {
+        -webkit-appearance: none;
+        width: 100%;
+        border-radius: 1rem;
+      }
 
-#range::before,
-#range::after {
-  position: absolute;
-  top: 2rem;
-  color: #333;
-  font-size: 14px;
-  line-height: 1;
-  padding: 3px 5px;
-  background-color: #53648a;
-  border-radius: 4px;
-}
+      #range:focus {
+        outline: none;
+      }
 
-#range::before {
-  left: 0;
-  content: attr(data-min);
-}
-#range::after {
-  right: 0;
-  content: attr(data-max);
-}
+      #range::before,
+      #range::after {
+        position: absolute;
+        top: 2rem;
+        color: #333;
+        font-size: 14px;
+        line-height: 1;
+        padding: 3px 5px;
+        background-color: #53648a;
+        border-radius: 4px;
+      }
 
-#range::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 1rem;
-  cursor: pointer;
-  animate: 0.2s;
-  background: linear-gradient(
-    90deg,
-    #d3c3b1 var(--range-progress),
-    #dee4ec var(--range-progress)
-  );
-  border-radius: 1rem;
-}
-#range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  border: 0.25rem solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 255, 0.3);
-  border-radius: 50%;
-  background: #d3c3b1;
-  cursor: pointer;
-  height: 38px;
-  width: 38px;
-  transform: translateY(calc(-50% + 8px));
-}
+      #range::before {
+        left: 0;
+        content: attr(data-min);
+      }
 
-#tooltip {
-  position: absolute;
-  z-index: 100;
-  top: -0.125rem;
-}
-#tooltip span {
-  position: absolute;
-  pointer-events: none;
-  text-align: center;
-  display: block;
-  line-height: 1;
-  padding: 0.25rem 0.25rem;
-  margin-left: 0.225rem;
-  color: #fff;
-  font-size: 1rem;
-  left: 50%;
-  transform: translate(-50%, 0);
-}
-#tooltip span:before {
-  position: absolute;
-  content: '';
-  left: 50%;
-  bottom: -8px;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border: 4px solid transparent;
-  border-top-color: #d3c3b1;
-}
+      #range::after {
+        right: 0;
+        content: attr(data-max);
+      }
+
+      #range::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 1rem;
+        cursor: pointer;
+        animate: 0.2s;
+        background: linear-gradient(90deg,
+            #d3c3b1 var(--range-progress),
+            #dee4ec var(--range-progress));
+        border-radius: 1rem;
+      }
+
+      #range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        border: 0.25rem solid #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 255, 0.3);
+        border-radius: 50%;
+        background: #d3c3b1;
+        cursor: pointer;
+        height: 38px;
+        width: 38px;
+        transform: translateY(calc(-50% + 8px));
+      }
+
+      #tooltip {
+        position: absolute;
+        z-index: 100;
+        top: -0.125rem;
+      }
+
+      #tooltip span {
+        position: absolute;
+        pointer-events: none;
+        text-align: center;
+        display: block;
+        line-height: 1;
+        padding: 0.25rem 0.25rem;
+        margin-left: 0.225rem;
+        color: #fff;
+        font-size: 1rem;
+        left: 50%;
+        transform: translate(-50%, 0);
+      }
+
+      #tooltip span:before {
+        position: absolute;
+        content: '';
+        left: 50%;
+        bottom: -8px;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border: 4px solid transparent;
+        border-top-color: #d3c3b1;
+      }
     </style>
 
-<script>
+    <script>
+      const range = document.getElementById('range'),
+        tooltip = document.getElementById('tooltip'),
+        setValue = () => {
+          const newValue = Number(
+              ((range.value - range.min) * 100) / (range.max - range.min)
+            ),
+            newPosition = 16 - newValue * 0.38;
+          tooltip.innerHTML = `<span>${range.value}</span>`;
+          tooltip.style.left = `calc(${newValue}% + (${newPosition}px))`;
+          document.documentElement.style.setProperty(
+            '--range-progress',
+            `calc(${newValue}% + (${newPosition}px))`
+          );
+        };
+      document.addEventListener('DOMContentLoaded', setValue);
+      range.addEventListener('input', setValue);
 
-const range = document.getElementById('range'),
-  tooltip = document.getElementById('tooltip'),
-  setValue = () => {
-    const newValue = Number(
-        ((range.value - range.min) * 100) / (range.max - range.min)
-      ),
-      newPosition = 16 - newValue * 0.38;
-    tooltip.innerHTML = `<span>${range.value}</span>`;
-    tooltip.style.left = `calc(${newValue}% + (${newPosition}px))`;
-    document.documentElement.style.setProperty(
-      '--range-progress',
-      `calc(${newValue}% + (${newPosition}px))`
-    );
-  };
-document.addEventListener('DOMContentLoaded', setValue);
-range.addEventListener('input', setValue);
 
+      function toggleTable() {
+        const table = document.getElementById('membership_table');
+        const topId = document.getElementById('membership_top_id');
 
-    function toggleTable() {
-      const table = document.getElementById('membership_table');
-      const topId = document.getElementById('membership_top_id');
-
-      if (table.classList.contains('active_table')) {
-        table.classList.remove('active_table');
-        topId.classList.remove('extend_height');
-      } else {
-        table.classList.add('active_table');
-        topId.classList.add('extend_height');
+        if (table.classList.contains('active_table')) {
+          table.classList.remove('active_table');
+          topId.classList.remove('extend_height');
+        } else {
+          table.classList.add('active_table');
+          topId.classList.add('extend_height');
+        }
       }
-    }
-  </script>
+    </script>
 
   <?php
     // return $html;
