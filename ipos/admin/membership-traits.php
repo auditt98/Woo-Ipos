@@ -236,7 +236,9 @@ trait MembershipTraits
   // SHORTCODE FOR DISPLAYING CUSTOMER INFO
   public function display_customer_info() // thong tin tai khoan
   {
-    // return "";
+    if (!is_user_logged_in()) {
+      return;
+    }
     $api_key = get_option('woo_ipos_api_key_setting');
     $pos_parent = get_option('woo_ipos_pos_parent_setting');
     $current_user = wp_get_current_user();
@@ -258,9 +260,18 @@ trait MembershipTraits
     // $html = "";
     $customer_name = "";
     $customer_membership_type = "";
+    $customer_membership_type_id = "";
     $customer_point = "";
     $customer_birthday = "";
     $membership_types = array();
+    $membership_index = -1;
+    $next_membership = 0;
+    $points_required = -1;
+    $points_remaining = -1;
+    $vouchers = array();
+    $valid_vouchers = array();
+    $expired_vouchers = array();
+
     if (is_user_logged_in()) {
       $customer_name = !empty($customer->name) ? $customer->name : "Chưa có thông tin";
       $customer_membership_type = !empty($customer->membership_type_name) ? $customer->membership_type_name : "Chưa có thông tin";
@@ -275,110 +286,285 @@ trait MembershipTraits
       usort($membership_types, function ($a, $b) {
         return $a->upgrade_amount - $b->upgrade_amount;
       });
+
+      $customer_membership_type_id = $customer->membership_type_id;
+      //find index of membership_type_id in membership_types array (type_id)
+      $index = array_search($customer_membership_type_id, array_column($membership_types, 'type_id'));
+      $membership_index = $index !== false ? $index : -1;
+      //get the next membership type, if not found, return the last one
+      $next_membership = $membership_index !== -1 && $membership_index < count($membership_types) ? $membership_types[$membership_index + 1] : 0;
+      if ($next_membership != 0) {
+        $points_required = $next_membership->upgrade_amount * $next_membership->point_rate;
+        $points_required = ceil($points_required);
+        $points_remaining = $points_required - $customer_point;
+      }
+      $vouchers = $this->get_vouchers();
+
+      $currentDate = new DateTime(); // Get the current date
+
+      $valid_vouchers = array_filter($vouchers, function ($voucher) use ($currentDate) {
+        $endDate = new DateTime($voucher->date_end);
+        return $endDate >= $currentDate;
+      });
+
+      $expired_vouchers = array_filter($vouchers, function ($voucher) use ($currentDate) {
+        $endDate = new DateTime($voucher->date_end);
+        return $endDate < $currentDate;
+      });
     }
 
   ?>
     <div class="membership_tab">
-      <div><?php echo json_encode($membership_types) ?></div>
       <div class="membership_top" id="membership_top_id">
         <div>
           <div class="membership_top--left">
             <div>hạng</div>
             <div><?php echo $customer_membership_type ?></div>
           </div>
-          <div class="membership_top--right"><?php echo $customer_point ?> pon</div>
+          <div class="membership_top--right"><?php echo ceil($customer_point) ?> pon</div>
         </div>
 
         <div class="progress-bar">
           <div class="progress-bar_remaining">
-            <p>Còn <span id="progress_remaining">40</span> pon để thăng hạng</p>
+            <p>Còn <span id="progress_remaining"><?php echo $points_remaining ?></span> pon để thăng hạng</p>
           </div>
           <div class="progress-bar_current">
             <div class="range-slider">
               <div id="tooltip"></div>
-              <input id="range" type="range" step="1" value="60" min="0" max="100">
+              <input id="range" type="range" step="1" value="<?php echo floor(($customer_point / $points_required) * 100) ?>" min="0" max="100" disabled>
             </div>
           </div>
         </div>
-
-        <!-- <div class="membership_detail">
-          <div onclick="toggleTable()">Thông tin chi tiết</div>
-
-          <div class="membership_detail--table" id="membership_table">
-            <table>
-              <tr>
-                <td>Họ và tên</td>
-                <td>Maria Anders</td>
-              </tr>
-              <tr>
-                <td>Số điện thoại</td>
-                <td>Francisco Chang</td>
-              </tr>
-              <tr>
-                <td>Loại hội viên</td>
-                <td>Roland Mendel</td>
-              </tr>
-              <tr>
-                <td>Điểm thành viên</td>
-                <td>Helen Bennett</td>
-              </tr>
-              <tr>
-                <td>Ngày sinh</td>
-                <td>Yoshi Tannamuri</td>
-              </tr>
-            </table>
-          </div>
-        </div> -->
-
       </div>
 
       <div class="membership_content">
         <div>Ưu đãi thành viên</div>
         <div class="voucher_grid">
-          <div class="voucher valid">
-            <div class="voucher_icon valid_c">
-              <img src="http://placeimg.com/16/16/any" />
+          <?php foreach ($valid_vouchers as $voucher) : ?>
+            <div class="voucher valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div><?php echo $voucher->voucher_label; ?></div>
+                <div><?php echo $voucher->voucher_desc; ?></div>
+                <div>HSD: <?php echo $voucher->voucher_display_expiry; ?></div>
+              </div>
             </div>
-            <div class="voucher_content">
-              <div>Miễn phí 1 đồ uống bất kỳ</div>
-              <div>khi tích đủ 60 PON</div>
+          <?php endforeach; ?>
+
+          <?php foreach ($expired_vouchers as $voucher) : ?>
+            <div class="voucher outdate">
+              <div class="voucher_icon outdate_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div><?php echo $voucher->voucher_label; ?></div>
+                <div><?php echo $voucher->voucher_desc; ?></div>
+                <div>HSD: <?php echo $voucher->voucher_display_expiry; ?></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+
+
+        </div>
+      </div>
+      <div class="tabs membership_content">
+        <div id="tab-pon" class="tab-pon">
+          <div class="tab-title">Ưu đãi Hạng PON</div>
+          <div class="voucher_grid">
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 đồ uống bất kỳ</div>
+                <div>khi tích đủ 20 PON</div>
+              </div>
+            </div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 slice mille crepes bất kỳ</div>
+                <div>khi tích đủ 40 PON</div>
+              </div>
+            </div>
+
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 đồ uống bất kỳ</div>
+                <div>khi tích đủ 60 PON</div>
+              </div>
+            </div>
+
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 entremet bất kỳ</div>
+                <div>khi tích đủ 80 PON</div>
+              </div>
+            </div>
+
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Quà sinh nhật: Giảm 10% bánh whole-cake</div>
+                <div></div>
+              </div>
             </div>
           </div>
 
-          <div class="voucher tobe_valid">
-            <div class="voucher_icon">
-              <img src="http://placeimg.com/16/16/any" />
+          <div class="tab-title">Điều kiện hạng thành viên PON</div>
+          <div class="voucher_grid">
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Áp dụng ngay sau khi đăng ký và bắt đầu tích điểm</div>
+              </div>
             </div>
-            <div class="voucher_content">
-              <div>Miễn phí 1 đồ uống bất kỳ</div>
-              <div>khi tích đủ 60 PON</div>
-            </div>
-          </div>
-
-          <div class="voucher oudate">
-            <div class="voucher_icon oudate_c">
-              <img src="http://placeimg.com/16/16/any" />
-            </div>
-            <div class="voucher_content">
-              <div>Miễn phí 1 đồ uống bất kỳ</div>
-              <div>khi tích đủ 60 PON</div>
-            </div>
-          </div>
-
-          <div class="voucher oudate">
-            <div class="voucher_icon oudate_c">
-              <img src="http://placeimg.com/16/16/any" />
-            </div>
-            <div class="voucher_content">
-              <div>Miễn phí 1 đồ uống bất kỳ</div>
-              <div>khi tích đủ 60 PON</div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tỷ lệ tích điểm: 50.000đ tiêu dùng tích được 1 PON</div>
+                <div>(1 PON = 1.000đ)</div>
+              </div>
             </div>
           </div>
+        </div>
+        <div id="tab-pon-fr" class="tab-pon-and-friend hidden">
+          <div class="tab-title">Ưu đãi Hạng PON & Friends</div>
+          <div class="voucher_grid">
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 Pon Bag</div>
+                <div>ngay khi thăng hạng</div>
+              </div>
+            </div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 đồ uống bất kỳ</div>
+                <div>khi tích đủ 40 PON</div>
+              </div>
+            </div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Giảm 10% cho mọi sản phẩm Grab & Go và Merchandise</div>
+                <div>khi tích đủ 60 PON</div>
+              </div>
+            </div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tặng 01 entremet bất kỳ</div>
+                <div>khi tích đủ 80 PON</div>
+              </div>
+            </div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Miễn phí vận chuyển cho đơn hàng mua bánh whole-cake</div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-title">Điều kiện hạng thành viên PON & Friends</div>
+          <div class="voucher_grid">
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Áp dụng ngay sau khi đăng ký và bắt đầu tích điểm</div>
+              </div>
+            </div>
+            <div class="voucher tobe_valid">
+              <div class="voucher_icon valid_c">
+                <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
+              </div>
+              <div class="voucher_content">
+                <div>Tỷ lệ tích điểm: 50.000đ tiêu dùng tích được 1 PON</div>
+                <div>(1 PON = 1.000đ)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-display">
+          <div class="tab-dot active" id="tab-dot-pon" onclick="switchTab('tab-pon')"></div>
+          <div class="tab-dot" id="tab-dot-pon-fr" onclick="switchTab('tab-pon-fr')"></div>
         </div>
       </div>
     </div>
 
     <style>
+      .hidden {
+        display: none;
+      }
+
+      .tab-display {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .tab-title {
+        font-weight: 700;
+        font-size: 24px;
+        margin-bottom: 16px;
+        color: #434343;
+        margin-top: 20px;
+      }
+
+      .tab-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: white;
+        margin: 0 10px;
+        cursor: pointer;
+      }
+
+      .tab-dot.active {
+        background-color: #53648a;
+      }
+
+      /* media for smartphones */
+      @media (max-width: 424px) {
+        .voucher_grid {
+          display: grid;
+          grid-template-columns: unset !important;
+          grid-gap: 16px;
+        }
+      }
+
+      #progress_remaining {
+        font-size: 15px;
+      }
+
       .membership_top {
         background-color: #53648a;
         color: white;
@@ -387,6 +573,7 @@ trait MembershipTraits
         font-size: 17px;
         height: 140px;
         transition: height .5s;
+        margin-bottom: 20px;
       }
 
       .membership_top>div:first-child {
@@ -454,6 +641,7 @@ trait MembershipTraits
       .membership_content {
         padding: 24px;
         background-color: #f3f3f3;
+        font-family: "DVNPoppins" !important;
       }
 
       .membership_content>div:first-child {
@@ -465,7 +653,7 @@ trait MembershipTraits
 
       .voucher_grid {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: 50% 50%;
         grid-gap: 16px;
       }
 
@@ -498,12 +686,8 @@ trait MembershipTraits
         transition: all 0.5s ease-in-out;
       }
 
-      .valid_c>img {
-        border: 2px solid white;
-      }
-
       .valid:hover {
-        box-shadow: 20px 20px 50px 15px grey;
+        box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
         cursor: pointer;
         transform: scale(1.1);
       }
@@ -515,14 +699,14 @@ trait MembershipTraits
         border: 2px solid #53648a;
       }
 
-      .oudate {
+      .outdate {
         color: #53648a;
         background-color: #f2f2ec;
         border: 2px solid #53648a;
         opacity: 0.3;
       }
 
-      .oudate_c>img {
+      .outdate_c>img {
         border: 2px solid #53648a;
       }
 
@@ -553,18 +737,6 @@ trait MembershipTraits
 
       #range:focus {
         outline: none;
-      }
-
-      #range::before,
-      #range::after {
-        position: absolute;
-        top: 2rem;
-        color: #333;
-        font-size: 14px;
-        line-height: 1;
-        padding: 3px 5px;
-        background-color: #53648a;
-        border-radius: 4px;
       }
 
       #range::before {
@@ -602,8 +774,8 @@ trait MembershipTraits
 
       #tooltip {
         position: absolute;
-        z-index: 100;
         top: -0.125rem;
+        z-index: 1;
       }
 
       #tooltip span {
@@ -662,6 +834,39 @@ trait MembershipTraits
         } else {
           table.classList.add('active_table');
           topId.classList.add('extend_height');
+        }
+      }
+
+      function switchTab(id) {
+        const tabPon = document.getElementById('tab-pon');
+        const tabPonFr = document.getElementById('tab-pon-fr');
+        if (id == 'tab-pon') {
+          tabPon.classList.remove('hidden');
+          tabPonFr.classList.add('hidden');
+          document.getElementById('tab-dot-pon').classList.add('active');
+          document.getElementById('tab-dot-pon-fr').classList.remove('active');
+        } else {
+          tabPon.classList.add('hidden');
+          tabPonFr.classList.remove('hidden');
+          document.getElementById('tab-dot-pon').classList.remove('active');
+          document.getElementById('tab-dot-pon-fr').classList.add('active');
+        }
+
+      }
+
+      function switchTcTab(id) {
+        const tabTcPon = document.getElementById('tab-tc-pon');
+        const tabTcPonFr = document.getElementById('tab-tc-pon-fr');
+        if (id == 'tab-tc-pon') {
+          tabTcPon.classList.remove('hidden');
+          tabTcPonFr.classList.add('hidden');
+          document.getElementById('tab-tc-dot-pon').classList.add('active');
+          document.getElementById('tab-tc-dot-pon-fr').classList.remove('active');
+        } else {
+          tabTcPon.classList.add('hidden');
+          tabTcPonFr.classList.remove('hidden');
+          document.getElementById('tab-tc-dot-pon').classList.remove('active');
+          document.getElementById('tab-tc-dot-pon-fr').classList.add('active');
         }
       }
     </script>
@@ -803,10 +1008,10 @@ trait MembershipTraits
     });
 
     //remove vouchers that are expired
-    $data = array_filter($data, function ($voucher) {
-      $endDate = new DateTime($voucher->date_end);
-      return $endDate >= new DateTime();
-    });
+    // $data = array_filter($data, function ($voucher) {
+    //   $endDate = new DateTime($voucher->date_end);
+    //   return $endDate >= new DateTime();
+    // });
     return $data;
   }
 
