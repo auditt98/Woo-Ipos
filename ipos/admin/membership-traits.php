@@ -95,6 +95,30 @@ trait MembershipTraits
 
   }
 
+  function profile_update_form_shortcode()
+  {
+    ob_start();
+
+    $current_user = wp_get_current_user();
+  ?>
+    <form id="profile-edit-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+      <input type="hidden" name="action" value="update_user_profile">
+      <input type="hidden" name="user_id" value="<?php echo esc_attr($current_user->ID); ?>">
+
+      <label for="user_email">Email:</label>
+      <input type="email" name="user_email" id="user_email" value="<?php echo esc_attr($current_user->user_email); ?>">
+
+      <label for="user_password">Mật khẩu:</label>
+      <input type="password" name="user_password" id="user_password">
+
+      <input type="submit" value="Update Profile">
+      <?php wp_nonce_field('update_user_profile', 'update_user_profile_nonce'); ?>
+    </form>
+  <?php
+
+    return ob_get_clean();
+  }
+
   public function customize_woo_login_form()
   {
   ?>
@@ -179,7 +203,7 @@ trait MembershipTraits
             sanitizedPhone = sanitizedPhone.substring(0, 9);
           }
           $(this).val(sanitizedPhone);
-          var email = '84' + sanitizedPhone + '@gmail.com';
+          var email = '84' + sanitizedPhone;
           $('#username').val(email);
         });
       });
@@ -431,6 +455,7 @@ trait MembershipTraits
               </div>
               <div class="voucher_content">
                 <div>Áp dụng ngay sau khi đăng ký và bắt đầu tích điểm</div>
+                <div></div>
               </div>
             </div>
             <div class="voucher tobe_valid">
@@ -489,6 +514,7 @@ trait MembershipTraits
               </div>
               <div class="voucher_content">
                 <div>Miễn phí vận chuyển cho đơn hàng mua bánh whole-cake</div>
+                <div></div>
               </div>
             </div>
           </div>
@@ -500,6 +526,7 @@ trait MembershipTraits
               </div>
               <div class="voucher_content">
                 <div>Áp dụng ngay sau khi đăng ký và bắt đầu tích điểm</div>
+                <div></div>
               </div>
             </div>
             <div class="voucher tobe_valid">

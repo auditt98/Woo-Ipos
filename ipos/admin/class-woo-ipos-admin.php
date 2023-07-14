@@ -75,9 +75,10 @@ class Woo_Ipos_Admin
 		add_action('woocommerce_created_customer', array($this, 'sync_created_customer_to_ipos'), 10, 3);
 		add_action('woocommerce_login_form_start', array($this, 'customize_woo_login_form'));
 		add_action('wp_head', array($this, 'woo_ipos_ajaxurl'));
-		add_action('woocommerce_checkout_billing', array($this, 'add_vouchers_to_checkout_form'));
+		add_action('woocommerce_checkout_after_order_review', array($this, 'add_vouchers_to_checkout_form'));
 
 		add_shortcode('woo_ipos_customer_info', array($this, 'display_customer_info'));
+		add_shortcode('profile_update_form', 'profile_update_form_shortcode');
 		// add_shortcode('woo_ipos_customer_vouchers', array($this, 'display_vouchers_info'));
 		add_shortcode('test', array($this, 'test'));
 		add_shortcode('test_order', array($this, 'test_order'));
