@@ -97,28 +97,69 @@ trait MembershipTraits
 
   function profile_update_form_shortcode()
   {
-    ob_start();
-
     $current_user = wp_get_current_user();
+
+    if (isset($_POST['action']) && $_POST['action'] === 'update_user_profile') {
+      $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+      $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
+      $user_password = isset($_POST['user_password']) ? $_POST['user_password'] : '';
+
+      // Update user data
+      $user_data = array(
+        'ID' => $user_id,
+        'user_email' => $user_email,
+      );
+
+      if (!empty($user_password)) {
+        $user_data['user_pass'] = $user_password;
+      }
+
+      $result = wp_update_user($user_data);
+
+      if (is_wp_error($result)) {
+        // Handle error
+        $error_message = $result->get_error_message();
+        return 'Error: ' . $error_message;
+      } else {
+        // Redirect or display success message
+        return 'User profile updated successfully!';
+      }
+    }
   ?>
-    <form id="profile-edit-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+    <style>
+      .membership_content {
+        padding: 24px;
+        background-color: #f3f3f3;
+        font-family: "DVNPoppins" !important;
+      }
+
+      .membership_content label {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .membership_content input[type="email"],
+      .membership_content input[type="password"],
+      .membership_content input[type="submit"] {
+        margin-bottom: 16px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    </style>
+
+    <form id="profile-edit-form" class="membership_content" method="post" action="">
       <input type="hidden" name="action" value="update_user_profile">
       <input type="hidden" name="user_id" value="<?php echo esc_attr($current_user->ID); ?>">
-
       <label for="user_email">Email:</label>
       <input type="email" name="user_email" id="user_email" value="<?php echo esc_attr($current_user->user_email); ?>">
-
       <label for="user_password">Mật khẩu:</label>
       <input type="password" name="user_password" id="user_password">
-
       <input type="submit" value="Update Profile">
       <?php wp_nonce_field('update_user_profile', 'update_user_profile_nonce'); ?>
     </form>
   <?php
-
-    return ob_get_clean();
   }
-
   public function customize_woo_login_form()
   {
   ?>

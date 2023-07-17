@@ -274,10 +274,22 @@ trait OrderTraits
 
   public function add_vouchers_to_checkout_form()
   {
-    $vouchers = $this->get_vouchers();
+    if (!is_user_logged_in()) {
 ?>
+      <h3 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Khuyến mãi & Đổi điểm</h3>
+      <div style="font-family: Cormorant,serif; font-weight: 600;">Vui lòng đăng nhập hoặc đăng ký để nhận khuyến mãi hoặc đổi điểm PON</div>
+      <div class="button" onclick="window.location.href='/my-account'">ĐĂNG NHẬP hoặc ĐĂNG KÝ</div>
+    <?php
+    }
+
+    $vouchers = $this->get_vouchers();
+    $vouchers = array_filter($vouchers, function ($voucher) {
+      $endDate = new DateTime($voucher->date_end);
+      return $endDate >= new DateTime();
+    });
+    ?>
     <div id="custom_section">
-      <h3>Voucher Khuyến mãi</h3>
+      <h3 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Voucher Khuyến mãi</h3>
       <div class="voucher-container">
         <?php foreach ($vouchers as $voucher) : ?>
           <div class="voucher" data-voucher-code="<?php echo $voucher->voucher_code; ?>">
