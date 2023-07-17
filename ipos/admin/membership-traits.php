@@ -253,6 +253,16 @@ trait MembershipTraits
 
   }
 
+  public function get_customer_points()
+  {
+    if (!is_user_logged_in()) {
+      return;
+    }
+    $customer = $this->get_ipos_user();
+    $customer_point = floor($customer->point);
+    return $customer_point;
+  }
+
   function disable_email_validation($username, $email, $errors)
   {
     // Remove the email validation error

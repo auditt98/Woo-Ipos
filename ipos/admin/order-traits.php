@@ -272,6 +272,38 @@ trait OrderTraits
     }
   }
 
+  public function exchange_point()
+  {
+    if (!is_user_logged_in()){
+      return;
+    }
+    try {
+      $point_amount = $_POST['point_amount'];
+      $api_key = get_option('woo_ipos_api_key_setting');
+      $pos_parent = get_option('woo_ipos_pos_parent_setting');
+      $exchange_point_url = 'exchange_point';
+      $exchange_point_method = 'GET';
+      $current_user = wp_get_current_user();
+      $current_user_login = $current_user->user_login;
+
+      $headers = array(
+        'access_token' => $api_key
+      );
+
+      $query_params = array(
+        'access_token' => $api_key,
+        'pos_parent' => $pos_parent,
+        'point' => $point_amount,
+        'user_id' => $current_user_login
+      );
+      $response = $this->call_api($exchange_point_url, $exchange_point_method, $headers, "", $query_params);
+      $data = $response->data;
+      wp_send_json_success($data->voucher_code);
+    } catch (Exception $e) {
+      wp_send_json_error($e->getMessage(), 500);
+    }
+  }
+
   public function add_vouchers_to_checkout_form()
   {
     if (!is_user_logged_in()) {
@@ -287,9 +319,11 @@ trait OrderTraits
       $endDate = new DateTime($voucher->date_end);
       return $endDate >= new DateTime();
     });
+    $customer_points = $this->get_customer_points();
+
     ?>
     <div id="custom_section">
-      <h3 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Voucher Khuyến mãi</h3>
+      <h5 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Voucher Khuyến mãi</h5>
       <div class="voucher-container">
         <?php foreach ($vouchers as $voucher) : ?>
           <div class="voucher" data-voucher-code="<?php echo $voucher->voucher_code; ?>">
@@ -299,6 +333,14 @@ trait OrderTraits
           </div>
         <?php endforeach; ?>
         <input type="hidden" name="applied_voucher" id="applied_voucher_input" value="">
+      </div>
+
+      <h5 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Đổi điểm PON</h5>
+      <div class="voucher-container">
+        <div style="width: 100%">Hiện tại bạn có <?php echo $customer_points; ?> PON</div>
+        <div>Quy đổi điểm Pon để được giảm giá!</div>
+        <input type="number" min="0" max="<?php echo $customer_points; ?>" step="1" name="point_exchange" id="point_exchange_input" placeholder="Nhập số điểm bạn muốn quy đổi">
+        <div class="button" onclick="handlePointExchange()">Đổi điểm PON</div>
       </div>
     </div>
 
@@ -312,6 +354,34 @@ trait OrderTraits
           });
         });
       });
+
+      function handlePointExchange() {
+        const pointExchangeInput = document.getElementById('point_exchange_input');
+        if (pointExchangeInput) {
+          let value = Number(pointExchangeInput.value);
+          verifyPointExchange(value);
+        }
+      }
+
+      function verifyPointExchange(pointAmount) {
+        jQuery.ajax({
+          url: ajaxurl,
+          type: 'POST',
+          data: {
+            action: 'exchange_point_action',
+            point_amount: pointAmount
+          },
+          success: function(response) {
+            if (response && response.data && response.data.length > 0) {
+              verifyVoucher(response.data);
+              window.location.reload();
+            }
+          },
+          error: function(error) {
+            console.error('Đã có lỗi xảy ra');
+          }
+        })
+      }
 
       function verifyVoucher(voucherId) {
         jQuery.ajax({
