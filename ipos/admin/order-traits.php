@@ -312,6 +312,7 @@ trait OrderTraits
       <div style="font-family: Cormorant,serif; font-weight: 600;">Vui lòng đăng nhập hoặc đăng ký để nhận khuyến mãi hoặc đổi điểm PON</div>
       <div class="button" onclick="window.location.href='/my-account'">ĐĂNG NHẬP hoặc ĐĂNG KÝ</div>
     <?php
+      return;
     }
 
     $vouchers = $this->get_vouchers();
