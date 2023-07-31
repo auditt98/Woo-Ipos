@@ -274,7 +274,7 @@ trait OrderTraits
 
   public function exchange_point()
   {
-    if (!is_user_logged_in()){
+    if (!is_user_logged_in()) {
       return;
     }
     try {
@@ -732,6 +732,7 @@ trait OrderTraits
 
   public function handle_order($id)
   {
+    error_log("--HANDLE ORDER CALLED---" . $id);
     //CONST
     $csb_thaiha_pos_id = get_option('woo_ipos_pos_id_csb_thaiha_setting');
     $csb_trunghoa_pos_id = get_option('woo_ipos_pos_id_csb_trunghoa_setting');
@@ -828,7 +829,7 @@ trait OrderTraits
     } else {
       //onepay
       $payment_info['Amount'] = $total;
-      $payment_info['Payment_Info'] = 'ONEPAY'; //ma giao dich
+      $payment_info['Payment_Info'] = 'PAYMENT_ON_DELIVERY'; //ma giao dich
     }
 
     $order_request['PaymentInfo'] = $payment_info;
@@ -851,6 +852,17 @@ trait OrderTraits
         $booking_info['Minute'] = $minute;
         $booking_info['Number_People'] = -1;
       }
+    }
+
+    if (empty($booking_info['Book_Date']) || empty($booking_info['Hour']) || empty($booking_info['Minute'])) {
+      // Set the booking information as the current date, hour, and minute.
+      $currentDate = date('Y-m-d 00:00:00');
+      $currentHour = date('H');
+      $currentMinute = date('i');
+
+      $booking_info['Book_Date'] = $currentDate;
+      $booking_info['Hour'] = $currentHour;
+      $booking_info['Minute'] = $currentMinute;
     }
     $order_request['booking_info'] = $booking_info;
     //HANDLE NOTE
@@ -939,6 +951,9 @@ trait OrderTraits
       'order_items' => $order_items,
       'voucher_code' => $voucher_code
     );
+    $json_body = json_encode($order_request);
+    $response = $this->call_api($pos_order_online_url, $pos_order_online_method, array('Content-Type: application/json'), $order_request, $query_params);
+    $test_data['order_response'] = $response;
     return json_encode($test_data);
   }
 
