@@ -830,7 +830,8 @@ trait OrderTraits
     } else {
       //onepay
       $payment_info['Amount'] = $total;
-      $payment_info['Payment_Info'] = 'PAYMENT_ON_DELIVERY'; //ma giao dich
+      $payment_info['Payment_Method'] = 'PAYMENT_ON_DELIVERY';
+      $payment_info['Payment_Info'] = $id; //ma giao dich
     }
 
     $order_request['PaymentInfo'] = $payment_info;
@@ -868,7 +869,7 @@ trait OrderTraits
     $order_request['booking_info'] = $booking_info;
     //HANDLE NOTE
     $order_request['note'] = $order_data['customer_note'] ? $order_data['customer_note'] : '';
-    $order_request['note'] = $order_request['note'] . ' --- Giao lúc: ' . $booking_info['Book_Date'] . ' ' . $booking_info['Hour'] . ':' . $booking_info['Minute'];
+    $order_request['note'] = $order_request['note'] . ' --- Giao luc: ' . $booking_info['Book_Date'] . ' ' . $booking_info['Hour'] . ':' . $booking_info['Minute'];
     //handle order_items
     //   {
     //     "Item_Type_Id": "DU",               
@@ -955,6 +956,9 @@ trait OrderTraits
     $json_body = json_encode($order_request);
     $response = $this->call_api($pos_order_online_url, $pos_order_online_method, array('Content-Type: application/json'), $order_request, $query_params);
     $test_data['order_response'] = $response;
+
+    error_log('---ORDER REQUEST---' . json_encode($order_request));
+    error_log('---ORDER RESPONSE---' . json_encode($response));
     return json_encode($test_data);
   }
 
