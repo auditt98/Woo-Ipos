@@ -714,7 +714,7 @@ trait OrderTraits
     return $brioche_result;
   }
 
-  function parse_phone_number($phoneNumber)
+  public function parse_phone_number($phoneNumber)
   {
     // Remove any non-digit characters from the phone number
     $phoneNumber = preg_replace('/\D/', '', $phoneNumber);
@@ -866,7 +866,7 @@ trait OrderTraits
       $booking_info['Hour'] = $currentHour;
       $booking_info['Minute'] = $currentMinute;
     }
-    $order_request['booking_info'] = $booking_info;
+    // $order_request['booking_info'] = $booking_info;
     //HANDLE NOTE
     $order_request['note'] = $order_data['customer_note'] ? $order_data['customer_note'] : '';
     $order_request['note'] = $order_request['note'] . ' --- Giao luc: ' . $booking_info['Book_Date'] . ' ' . $booking_info['Hour'] . ':' . $booking_info['Minute'];
@@ -954,11 +954,13 @@ trait OrderTraits
       'voucher_code' => $voucher_code
     );
     $json_body = json_encode($order_request);
-    $response = $this->call_api($pos_order_online_url, $pos_order_online_method, array('Content-Type: application/json'), $order_request, $query_params);
+    $response = $this->call_api($pos_order_online_url, $pos_order_online_method, array('Content-Type: application/json'), $json_body, $query_params);
     $test_data['order_response'] = $response;
 
     error_log('---ORDER REQUEST---' . json_encode($order_request));
     error_log('---ORDER RESPONSE---' . json_encode($response));
+    add_post_meta($id, 'request', $order_request, true);
+    add_post_meta($id, 'response', $response, true);
     return json_encode($test_data);
   }
 

@@ -90,7 +90,7 @@ class Woo_Ipos_Admin
 		add_action('wp_ajax_exchange_point_action', array($this, 'exchange_point'));
 		add_action('woocommerce_cart_calculate_fees',  array($this, 'add_custom_fees'));
 		add_action('woocommerce_checkout_process', array($this, 'save_voucher_to_order'));
-		add_action('woocommerce_new_order', array($this, 'handle_order'));
+		add_action('woocommerce_order_status_processing', array($this, 'handle_order'));
 	}
 
 	function woo_ipos_ajaxurl()
