@@ -570,7 +570,7 @@ trait OrderTraits
     $pos_a_walk_on_grass = 'AWOGCB';
 
     $tea_result = array();
-    $tea_result['Item_Type_Id'] = 'CEB'; //---------------- REPLACE THIS
+    $tea_result['Item_Type_Id'] = 'CB'; //---------------- REPLACE THIS
     $tea_result['Quantity'] = 1;
     $tea_result['Price'] = 0;
     $tea_result['Parent_Id'] = $parent_id;
@@ -622,7 +622,7 @@ trait OrderTraits
     $pos_vanilla_choux = 'VCWC14';
 
     $cake_result = array();
-    $cake_result['Item_Type_Id'] = 'WC'; //---------------- REPLACE THIS
+    $cake_result['Item_Type_Id'] = 'WCN'; //---------------- REPLACE THIS
     $cake_result['Quantity'] = 1;
     $cake_result['Price'] = 0;
     $cake_result['Parent_Id'] = $parent_id;
@@ -687,10 +687,10 @@ trait OrderTraits
   public function handle_brioche($brioche, $parent_id)
   {
     $pos_classic_butter_bri = 'CBC';
-    $pos_strawberries_ricotta_bri = 'SCSL';
-    $pos_truffle_bri = 'SCSL';
+    $pos_strawberries_ricotta_bri = 'SARB';
+    $pos_truffle_bri = 'TMACB';
     $brioche_result = array();
-    $bri_item_type_id = 'BRI'; //---------------- REPLACE THIS
+    $bri_item_type_id = 'GAGAO'; //---------------- REPLACE THIS
     $brioche_result['Item_Type_Id'] = $bri_item_type_id;
     $brioche_result['Quantity'] = 1;
     $brioche_result['Price'] = 0;
