@@ -99,8 +99,8 @@ trait MembershipTraits
   {
     $current_user = wp_get_current_user();
     $ipos_customer = $this->get_ipos_user();
-    $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $ipos_customer->birthday);
-    $formattedDate = $parsedDate->format('Y-m-d');
+    // $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $ipos_customer->birthday);
+    // $formattedDate = $parsedDate->format('Y-m-d');
     if (isset($_POST['action']) && $_POST['action'] === 'update_user_profile') {
       $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
       $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
@@ -116,6 +116,27 @@ trait MembershipTraits
       }
 
       $result = wp_update_user($user_data);
+
+      // $ipos_name = isset($_POST['ipos_name']) ? $_POST['ipos_name'] : '';
+      // $ipos_birthday = isset($_POST['ipos_birthday']) ? $_POST['ipos_birthday'] : '';
+
+      // $update_membership_url = 'order_online';
+      // $update_membership_method = 'POST';
+      // $api_key = get_option('woo_ipos_api_key_setting');
+      // $pos_parent = get_option('woo_ipos_pos_parent_setting');
+
+      // $query_params = array(
+      //   'access_token' => $api_key,
+      //   'pos_parent' => $pos_parent
+      // );
+
+      // $update_data = array(
+      //   'name' => $ipos_name,
+      //   'birthday' => $ipos_birthday
+      // );
+
+      // $json_body = json_encode($update_data);
+      // $response = $this->call_api($update_membership_url, $update_membership_method, array('Content-Type: application/json'), $json_body, $query_params);
 
       if (is_wp_error($result)) {
         // Handle error
