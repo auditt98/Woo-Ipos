@@ -98,12 +98,13 @@ trait MembershipTraits
   function profile_update_form_shortcode()
   {
     $current_user = wp_get_current_user();
-
+    $ipos_customer = $this->get_ipos_user();
+    $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $ipos_customer->birthday);
+    $formattedDate = $parsedDate->format('Y-m-d');
     if (isset($_POST['action']) && $_POST['action'] === 'update_user_profile') {
       $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
       $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
       $user_password = isset($_POST['user_password']) ? $_POST['user_password'] : '';
-
       // Update user data
       $user_data = array(
         'ID' => $user_id,
@@ -155,6 +156,10 @@ trait MembershipTraits
       <input type="email" name="user_email" id="user_email" value="<?php echo esc_attr($current_user->user_email); ?>">
       <label for="user_password">Mật khẩu:</label>
       <input type="password" name="user_password" id="user_password">
+      <label for="ipos_name">Họ và tên:</label>
+      <input type="text" value="<?php echo esc_attr($ipos_customer->name); ?>" name="ipos_name" id="ipos_name">
+      <label for="ipos_birthday">Ngày sinh:</label>
+      <input type="date" name="ipos_birthday" id="ipos_birthday" value="<?php echo esc_attr($formattedDate); ?>">
       <input type="submit" value="Update Profile">
       <?php wp_nonce_field('update_user_profile', 'update_user_profile_nonce'); ?>
     </form>
