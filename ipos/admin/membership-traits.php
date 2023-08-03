@@ -97,10 +97,22 @@ trait MembershipTraits
 
   function profile_update_form_shortcode()
   {
+    if (!is_user_logged_in()) {
+      return;
+    }
     $current_user = wp_get_current_user();
     $ipos_customer = $this->get_ipos_user();
-    // $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $ipos_customer->birthday);
-    // $formattedDate = $parsedDate->format('Y-m-d');
+    $bday = "";
+
+    if ($ipos_customer && property_exists($ipos_customer, 'birthday')) {
+      $customer_birthday = $ipos_customer->birthday;
+
+      if (!empty($customer_birthday)) {
+        // Birthday is set and not empty
+        $is_bday_set = true;
+        $bday = date('Y-m-d', strtotime($customer_birthday));
+      }
+    }
     if (isset($_POST['action']) && $_POST['action'] === 'update_user_profile') {
       $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
       $user_email = isset($_POST['user_email']) ? sanitize_email($_POST['user_email']) : '';
@@ -117,35 +129,29 @@ trait MembershipTraits
 
       $result = wp_update_user($user_data);
 
-      // $ipos_name = isset($_POST['ipos_name']) ? $_POST['ipos_name'] : '';
-      // $ipos_birthday = isset($_POST['ipos_birthday']) ? $_POST['ipos_birthday'] : '';
+      $ipos_name = isset($_POST['ipos_name']) ? $_POST['ipos_name'] : '';
+      $ipos_birthday = isset($_POST['ipos_birthday']) ? $_POST['ipos_birthday'] : '';
 
-      // $update_membership_url = 'order_online';
-      // $update_membership_method = 'POST';
-      // $api_key = get_option('woo_ipos_api_key_setting');
-      // $pos_parent = get_option('woo_ipos_pos_parent_setting');
+      $update_membership_url = 'order_online';
+      $update_membership_method = 'POST';
+      $api_key = get_option('woo_ipos_api_key_setting');
+      $pos_parent = get_option('woo_ipos_pos_parent_setting');
 
-      // $query_params = array(
-      //   'access_token' => $api_key,
-      //   'pos_parent' => $pos_parent
-      // );
+      $query_params = array(
+        'access_token' => $api_key,
+        'pos_parent' => $pos_parent
+      );
 
-      // $update_data = array(
-      //   'name' => $ipos_name,
-      //   'birthday' => $ipos_birthday
-      // );
+      $update_data = array(
+        'name' => $ipos_name,
+        'birthday' => $ipos_birthday,
+        "phone" => $current_user->user_login
+      );
 
-      // $json_body = json_encode($update_data);
-      // $response = $this->call_api($update_membership_url, $update_membership_method, array('Content-Type: application/json'), $json_body, $query_params);
-
-      if (is_wp_error($result)) {
-        // Handle error
-        $error_message = $result->get_error_message();
-        return 'Error: ' . $error_message;
-      } else {
-        // Redirect or display success message
-        return 'User profile updated successfully!';
-      }
+      $json_body = json_encode($update_data);
+      $response = $this->call_api($update_membership_url, $update_membership_method, array('Content-Type: application/json'), $update_data, $query_params);
+      error_log('----MEMBERSHIP UPDATE REQ----' . $json_body);
+      error_log('----MEMBERSHIP UPDATE-----' . json_encode($response));
     }
   ?>
     <style>
@@ -180,7 +186,7 @@ trait MembershipTraits
       <label for="ipos_name">Họ và tên:</label>
       <input type="text" value="<?php echo esc_attr($ipos_customer->name); ?>" name="ipos_name" id="ipos_name">
       <label for="ipos_birthday">Ngày sinh:</label>
-      <input type="date" name="ipos_birthday" id="ipos_birthday" value="<?php echo esc_attr($formattedDate); ?>">
+      <input type="date" name="ipos_birthday" id="ipos_birthday" value="<?php echo esc_attr($bday); ?>">
       <input type="submit" value="Update Profile">
       <?php wp_nonce_field('update_user_profile', 'update_user_profile_nonce'); ?>
     </form>

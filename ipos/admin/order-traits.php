@@ -868,8 +868,9 @@ trait OrderTraits
     }
     // $order_request['booking_info'] = $booking_info;
     //HANDLE NOTE
+    $order_request['is_pending'] = 0;
     $order_request['note'] = $order_data['customer_note'] ? $order_data['customer_note'] : '';
-    $order_request['note'] = $order_request['note'] . ' --- Giao luc: ' . $booking_info['Book_Date'] . ' ' . $booking_info['Hour'] . ':' . $booking_info['Minute'];
+    $order_request['note'] = $order_request['note'] . ' [WEBSITE] --- Giao luc: ' . $booking_info['Book_Date'] . ' ' . $booking_info['Hour'] . ':' . $booking_info['Minute'];
     //handle order_items
     //   {
     //     "Item_Type_Id": "DU",               
