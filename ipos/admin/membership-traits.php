@@ -438,7 +438,7 @@ trait MembershipTraits
           <div class="progress-bar_current">
             <div class="range-slider">
               <div id="tooltip"></div>
-              <input id="range" type="range" step="1" value="<?php echo floor(($customer_point / $points_required) * 100) ?>" min="0" max="100" disabled>
+              <input id="range" type="range" step="1" value="<?php echo ceil(($customer_point / $points_required) * 100) ?>" min="0" max="100" disabled>
             </div>
           </div>
         </div>
@@ -485,8 +485,9 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Tặng 01 đồ uống bất kỳ</div>
-                <div>khi tích đủ 20 PON</div>
+                <div>Tặng 01 voucher đồ uống bất kỳ</div>
+                <div>khi tích đủ 20 PON lần đầu tiên</div>
+                <div>HSD 2 tuần kể từ ngày được tặng</div>
               </div>
             </div>
             <div class="voucher tobe_valid">
@@ -496,6 +497,7 @@ trait MembershipTraits
               <div class="voucher_content">
                 <div>Tặng 01 slice mille crepes bất kỳ</div>
                 <div>khi tích đủ 40 PON</div>
+                <div>HSD 2 tuần kể từ ngày được tặng</div>
               </div>
             </div>
 
@@ -504,8 +506,9 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Tặng 01 đồ uống bất kỳ</div>
+                <div>Tặng 01 voucher đồ uống bất kỳ</div>
                 <div>khi tích đủ 60 PON</div>
+                <div>HSD 2 tuần kể từ ngày được tặng</div>
               </div>
             </div>
 
@@ -514,8 +517,9 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Tặng 01 entremet bất kỳ</div>
+                <div>Tặng 01 voucher entremet bất kỳ</div>
                 <div>khi tích đủ 80 PON</div>
+                <div>HSD 2 tuần kể từ ngày được tặng</div>
               </div>
             </div>
 
@@ -524,8 +528,8 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Quà sinh nhật: Giảm 10% bánh whole-cake</div>
-                <div></div>
+                <div>Ưu đãi sinh nhật: Giảm 10% bánh whole-cake</div>
+                <div>HSD 2 tuần kể từ ngày được tặng</div>
               </div>
             </div>
           </div>
@@ -560,7 +564,7 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Tặng 01 Pon Bag</div>
+                <div>Tặng 01 Pon Celebration Bag</div>
                 <div>ngay khi thăng hạng</div>
               </div>
             </div>
@@ -569,8 +573,9 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Tặng 01 đồ uống bất kỳ</div>
+                <div>Tặng 01 voucher đồ uống bất kỳ</div>
                 <div>khi tích đủ 40 PON</div>
+                <div>HSD 2 tuần kể từ ngày được tặng</div>
               </div>
             </div>
             <div class="voucher tobe_valid">
@@ -578,11 +583,11 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Giảm 10% cho mọi sản phẩm Grab & Go và Merchandise</div>
-                <div>khi tích đủ 60 PON</div>
+                <div>Luôn giảm 10% cho mọi sản phẩm Grab & Go và Merchandise</div>
+                <div></div>
               </div>
             </div>
-            <div class="voucher tobe_valid">
+            <!-- <div class="voucher tobe_valid">
               <div class="voucher_icon valid_c">
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
@@ -590,13 +595,13 @@ trait MembershipTraits
                 <div>Tặng 01 entremet bất kỳ</div>
                 <div>khi tích đủ 80 PON</div>
               </div>
-            </div>
+            </div> -->
             <div class="voucher tobe_valid">
               <div class="voucher_icon valid_c">
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Miễn phí vận chuyển cho đơn hàng mua bánh whole-cake</div>
+                <div style="width: 93%">Giảm 50k cho mọi đơn hàng mua bánh Whole-Cake</div>
                 <div></div>
               </div>
             </div>
@@ -608,7 +613,7 @@ trait MembershipTraits
                 <img src="https://cestsibon.sgp1.digitaloceanspaces.com/wp-content/uploads/2023/07/13022210/tag-2.png" />
               </div>
               <div class="voucher_content">
-                <div>Áp dụng ngay sau khi đăng ký và bắt đầu tích điểm</div>
+                <div>Áp dụng khi tổng tích lũy của khách đạt 100 PON</div>
                 <div></div>
               </div>
             </div>
@@ -786,7 +791,7 @@ trait MembershipTraits
         font-weight: 700;
       }
 
-      .voucher_content>div:last-child {
+      .voucher_content>div:nth-child(n+2) {
         font-size: 14px;
       }
 
