@@ -714,6 +714,89 @@ trait OrderTraits
     return $brioche_result;
   }
 
+  public function handle_cold_hot_salty($cold_hot, $parent_id)
+  {
+    $pos_salty_hand_hot = 'SHLHOT';
+    $pos_salty_hand_cold = 'SHLC';
+
+    $salty_result = array();
+    $salty_item_type_id = 'CAL'; //---------------- REPLACE THIS
+
+    $salty_result['Item_Type_Id'] = $salty_item_type_id;
+    $salty_result['Quantity'] = 1;
+    $salty_result['Price'] = 0;
+    $salty_result['Parent_Id'] = $parent_id;
+
+    if ($cold_hot == 'Salty Hand Coffee Đá') {
+      $salty_result['Item_Id'] = $pos_salty_hand_cold;
+      $salty_result['Item_Name'] = 'Salty Hand Coffee Đá';
+      $salty_result['Note'] = 'Salty Hand Coffee Đá';
+    }
+    if ($cold_hot == 'Salty Hand Coffee Nóng') {
+      $salty_result['Item_Id'] = $pos_salty_hand_hot;
+      $salty_result['Item_Name'] = 'Salty Hand Coffee Nóng';
+      $salty_result['Note'] = 'Salty Hand Coffee Nóng';
+    }
+    return $salty_result;
+  }
+
+  public function handle_kombucha($kombucha, $parent_id)
+  {
+    $kombucha_result = array();
+
+    $pos_padme = 'PK750ML';
+    $pos_rose_champ = 'RCK750ML';
+    $pos_summo = 'SMO750ML';
+    $komb_type_id = 'GAGB'; //---------------- REPLACE THIS
+    $kombucha_result['Item_Type_Id'] = $komb_type_id;
+    $kombucha_result['Quantity'] = 1;
+    $kombucha_result['Price'] = 0;
+    $kombucha_result['Parent_Id'] = $parent_id;
+    if ($kombucha == 'Padme Kombucha 750ml') {
+      $kombucha_result['Item_Id'] = $pos_padme;
+      $kombucha_result['Item_Name'] = 'Padme Kombucha 750ml';
+      $kombucha_result['Note'] = 'Padme Kombucha 750ml';
+    }
+    if ($kombucha == 'Rose Champagne Kombucha 750ml') {
+      $kombucha_result['Item_Id'] = $pos_rose_champ;
+      $kombucha_result['Item_Name'] = 'Rose Champagne Kombucha 750ml';
+      $kombucha_result['Note'] = 'Rose Champagne Kombucha 750ml';
+    }
+    if ($kombucha == 'Sum-mơ Kombucha 750ml') {
+      $kombucha_result['Item_Id'] = $pos_summo;
+      $kombucha_result['Item_Name'] = 'Sum-mơ Kombucha 750ml';
+      $kombucha_result['Note'] = 'Sum-mơ Kombucha 750ml';
+    }
+
+    return $kombucha_result;
+  }
+
+  public function handle_cold_brew($cold_brew, $parent_id)
+  {
+    $cold_brew_type_id = 'GAGB';
+    $cold_brew_result = array();
+    $pos_cold_brew_french_vanilla = 'FVCBC';
+    $pos_cold_brew_golden_berry = 'GBCBC';
+
+    $cold_brew_result['Item_Type_Id'] = $cold_brew_type_id;
+    $cold_brew_result['Quantity'] = 1;
+    $cold_brew_result['Price'] = 0;
+    $cold_brew_result['Parent_Id'] = $parent_id;
+
+    if ($cold_brew == 'French Vanilla Cold Brew Coffee 290ml') {
+      $cold_brew_result['Item_Id'] = $pos_cold_brew_french_vanilla;
+      $cold_brew_result['Item_Name'] = 'French Vanilla Cold Brew Coffee';
+      $cold_brew_result['Note'] = 'French Vanilla Cold Brew Coffee';
+    }
+
+    if ($cold_brew == 'Golden Berry Cold Brew Coffee 290ml') {
+      $cold_brew_result['Item_Id'] = $pos_cold_brew_golden_berry;
+      $cold_brew_result['Item_Name'] = 'Golden Berry Cold Brew Coffee';
+      $cold_brew_result['Note'] = 'Golden Berry Cold Brew Coffee';
+    }
+    return $cold_brew_result;
+  }
+
   public function parse_phone_number($phoneNumber)
   {
     // Remove any non-digit characters from the phone number
@@ -729,6 +812,79 @@ trait OrderTraits
     }
 
     return $phoneNumber;
+  }
+
+  function generateRandomString($length)
+  {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $random_string = '';
+    for ($i = 0; $i < $length; $i++) {
+      $random_string .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $random_string;
+  }
+
+  public function handle_custom_combo($sku)
+  {
+    $result = array();
+
+    if ($sku == 'COMBO|PCB') {
+      $parent_id = 'PCB';
+      $custom_item1 = array();
+      $custom_item1['Item_Type_Id'] = 'GAGB'; //---------------- REPLACE THIS
+      $custom_item1['Quantity'] = 1;
+      $custom_item1['Price'] = 0;
+      $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Item_Id'] = "RCK750ML";
+      $custom_item1['Item_Name'] = '01 Rose Champagne Kombucha 750ml';
+      $custom_item1['Note'] = '01 Rose Champagne Kombucha 750ml';
+
+      $custom_item2 = array();
+      $custom_item2['Item_Type_Id'] = 'GAGAO'; //---------------- REPLACE THIS
+      $custom_item2['Quantity'] = 1;
+      $custom_item2['Price'] = 0;
+      $custom_item2['Parent_Id'] = $parent_id;
+      $custom_item2['Item_Id'] = "FB";
+      $custom_item2['Item_Name'] = '01 Bó hoa tươi trong ngày/Flower Bouquet';
+      $custom_item2['Note'] = '01 Bó hoa tươi trong ngày/Flower Bouquet';
+      array_push($result, $custom_item1);
+      array_push($result, $custom_item2);
+    }
+
+    if ($sku == 'COMBO|PHBB') {
+      $parent_id = 'PHBB';
+      $custom_item1 = array();
+      $custom_item1['Item_Type_Id'] = 'GAGB'; //---------------- REPLACE THIS
+      $custom_item1['Quantity'] = 1;
+      $custom_item1['Price'] = 0;
+      $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Item_Id'] = "HRCBT";
+      $custom_item1['Item_Name'] = 'Mood Up! Cold Brew Tea 300ml';
+      $custom_item1['Note'] = 'Mood Up! Cold Brew Tea 300ml';
+
+      $custom_item2 = array();
+      $custom_item2['Item_Type_Id'] = 'GAGAO'; //---------------- REPLACE THIS
+      $custom_item2['Quantity'] = 1;
+      $custom_item2['Price'] = 0;
+      $custom_item2['Parent_Id'] = $parent_id;
+      $custom_item2['Item_Id'] = "HFBP";
+      $custom_item2['Item_Name'] = 'Holiday Flavored Butter Pack';
+      $custom_item2['Note'] = 'Holiday Flavored Butter Pack';
+
+      $custom_item3 = array();
+      $custom_item3['Item_Type_Id'] = 'CB'; //---------------- REPLACE THIS
+      $custom_item3['Quantity'] = 1;
+      $custom_item3['Price'] = 0;
+      $custom_item3['Parent_Id'] = $parent_id;
+      $custom_item3['Item_Id'] = "HCM";
+      $custom_item3['Item_Name'] = 'Houjicha Cocoa Mix';
+      $custom_item3['Note'] = 'Houjicha Cocoa Mix';
+
+      array_push($result, $custom_item1);
+      array_push($result, $custom_item2);
+      array_push($result, $custom_item3);
+    }
+    return $result;
   }
 
   public function handle_order($id)
@@ -754,7 +910,8 @@ trait OrderTraits
     $order_request['is_estimate'] = 0;
 
     $order = wc_get_order($id);
-    $order_request['foodbook_code'] = $id;
+    $random_string = generateRandomString(4);
+    $order_request['foodbook_code'] = "o" . $random_string . '_' . $id;
 
     $order_data = $order->get_data(); // The Order data
     $order_items_data = array_map(function ($item) {
@@ -926,6 +1083,18 @@ trait OrderTraits
                 $brioche_result = $this->handle_brioche($group['value'], $item_id);
                 array_push($order_item_children, $brioche_result);
               }
+              if ($group['label'] == 'Vị Cold Brew Coffee') {
+                $cold_brew_result = $this->handle_cold_brew($group['value'], $item_id);
+                array_push($order_item_children, $cold_brew_result);
+              }
+              if ($group['label'] == 'Chọn Đá/Nóng') {
+                $cold_hot_salty_result = $this->handle_cold_hot_salty($group['value'], $item_id);
+                array_push($order_item_children, $cold_hot_salty_result);
+              }
+              if ($group['label'] == 'Chai thứ nhất' || $group['label'] == 'Chai thứ hai' || $group['label'] == 'Chai thứ ba' || $group['label'] == 'Chai thứ tư' || $group['label'] == 'Chai thứ năm') {
+                $kombucha_result = $this->handle_kombucha($group['value'], $item_id);
+                array_push($order_item_children, $kombucha_result);
+              }
             }
           }
         }
@@ -934,6 +1103,12 @@ trait OrderTraits
       foreach ($order_item_children as $order_item_child) {
         array_push($order_items, $order_item_child);
       }
+      $custom_children = array();
+      $custom_children = $this->handle_custom_combo($sku);
+      foreach ($custom_children as $custom_child) {
+        array_push($order_items, $custom_child);
+      }
+
       $order_item_children = array();
     }
 
