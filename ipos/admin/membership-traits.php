@@ -411,7 +411,7 @@ trait MembershipTraits
 
       $valid_vouchers = array_filter($vouchers, function ($voucher) use ($currentDate) {
         $endDate = new DateTime($voucher->date_end);
-        return $endDate >= $currentDate;
+        return $endDate >= $currentDate && $voucher->status == 4;
       });
 
       $expired_vouchers = array_filter($vouchers, function ($voucher) use ($currentDate) {

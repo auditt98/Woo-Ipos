@@ -318,7 +318,7 @@ trait OrderTraits
     $vouchers = $this->get_vouchers();
     $vouchers = array_filter($vouchers, function ($voucher) {
       $endDate = new DateTime($voucher->date_end);
-      return $endDate >= new DateTime();
+      return $endDate >= new DateTime() && $voucher->status == 4;
     });
     $customer_points = $this->get_customer_points();
 
@@ -395,6 +395,13 @@ trait OrderTraits
           success: function(response) {
             if (response?.data?.error?.message) {
               alert(response.data.error.message);
+              jQuery(document.body).trigger("update_checkout");
+              return
+            }
+            if (response?.data?.data?.Code != 4) {
+              alert('Voucher không hợp lệ');
+              jQuery(document.body).trigger("update_checkout");
+              return;
             }
             if (response?.data?.data?.Coupon_Code) {
               jQuery('#applied_voucher_input').val(response.data.data.Coupon_Code);
@@ -814,7 +821,7 @@ trait OrderTraits
     return $phoneNumber;
   }
 
-  function generateRandomString($length)
+  public function generateRandomString($length)
   {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $random_string = '';
@@ -910,8 +917,8 @@ trait OrderTraits
     $order_request['is_estimate'] = 0;
 
     $order = wc_get_order($id);
-    $random_string = generateRandomString(4);
-    $order_request['foodbook_code'] = "o" . $random_string . '_' . $id;
+    $random_string = $this->generateRandomString(4);
+    $order_request['foodbook_code'] = "o" . $random_string . $id;
 
     $order_data = $order->get_data(); // The Order data
     $order_items_data = array_map(function ($item) {
@@ -1091,7 +1098,7 @@ trait OrderTraits
                 $cold_hot_salty_result = $this->handle_cold_hot_salty($group['value'], $item_id);
                 array_push($order_item_children, $cold_hot_salty_result);
               }
-              if ($group['label'] == 'Chai thứ nhất' || $group['label'] == 'Chai thứ hai' || $group['label'] == 'Chai thứ ba' || $group['label'] == 'Chai thứ tư' || $group['label'] == 'Chai thứ năm') {
+              if ($group['label'] == 'Chai thứ nhất' || $group['label'] == 'Chai thứ hai' || $group['label'] == 'Chai thứ ba' || $group['label'] == 'Chai thứ tư' || $group['label'] == 'Chai thứ năm' || $group['label'] == 'Chai thứ sáu') {
                 $kombucha_result = $this->handle_kombucha($group['value'], $item_id);
                 array_push($order_item_children, $kombucha_result);
               }
