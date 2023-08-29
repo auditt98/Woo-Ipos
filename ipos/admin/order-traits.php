@@ -140,6 +140,7 @@ trait OrderTraits
     session_start();
     $response = isset($_SESSION['voucher_response']) ? unserialize($_SESSION['voucher_response']) : null;
     if ($response) {
+      error_log('Json($response->data) - ' . json_encode($response->data));
       $data = $response->data;
       //check discount amount, if there's discount amount, add a fee of -discount_amount
       if (isset($data->Discount_Amount) && $data->Discount_Amount != 0) {
@@ -153,6 +154,19 @@ trait OrderTraits
       }
     }
   }
+
+  public function on_cart_update() {
+    error_log("~~~~~Cart quantity updated~~~~~");
+  }
+
+  public function clear_voucher()
+  {
+    session_start();
+    unset($_SESSION['voucher_response']);
+    unset($_SESSION['voucher_code']);
+    WC()->cart->calculate_totals();
+  }
+
   public function apply_voucher()
   {
     // {
@@ -187,16 +201,24 @@ trait OrderTraits
       // return;
       //POS Parent
       $pos_parent = get_option('woo_ipos_pos_parent_setting');
+      session_start();
+      if ($voucherId == '') {
+        $_SESSION['voucher_response'] = "";
+        $_SESSION['voucher_code'] = "";
+        WC()->cart->calculate_totals();
+        wp_send_json_success("");
+        return;
+      }
 
       //Featured POS
       $featured_pos = $this->get_featured_pos();
       $current_user = wp_get_current_user();
       $current_cart = $this->parse_current_cart();
-      // echo json_encode($current_cart);
       //CURRENT USER LOGIN
       $current_user_login = $current_user->user_login;
 
       $order_data_item = array();
+      $children_data_item = array();
       foreach ($current_cart as $cart_item) {
         $item = array();
         //
@@ -250,6 +272,42 @@ trait OrderTraits
         $item['Note'] = $product_name;
         //push item to order_data_item
         array_push($order_data_item, $item);
+        foreach ($cart_item['extras'] as $child_item) {
+          if ($child_item->label == 'Hộp trà') {
+            $tea_result = $this->handle_tea($child_item->value, $cart_item['product_sku']);
+            array_push($children_data_item, $tea_result);
+          }
+          if ($child_item->label == 'Bánh wholecake') {
+            $wholecake_result = $this->handle_wholecake($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $wholecake_result);
+          }
+          if ($child_item->label == 'Vị bánh Brioche 1' || $child_item->label == 'Vị bánh Brioche 2') {
+            $brioche_result = $this->handle_brioche($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $brioche_result);
+          }
+          if ($child_item->label == 'Vị Cold Brew Coffee') {
+            $cold_brew_result = $this->handle_cold_brew($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $cold_brew_result);
+          }
+          if ($child_item->label == 'Chọn Đá/Nóng') {
+            $cold_hot_salty_result = $this->handle_cold_hot_salty($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $cold_hot_salty_result);
+          }
+          if ($child_item->label == 'Chai thứ nhất' || $child_item->label == 'Chai thứ hai' || $child_item->label == 'Chai thứ ba' || $child_item->label == 'Chai thứ tư' || $child_item->label == 'Chai thứ năm' || $child_item->label == 'Chai thứ sáu') {
+            $kombucha_result = $this->handle_kombucha($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $kombucha_result);
+          }
+        }
+        foreach ($order_item_children as $order_item_child) {
+          array_push($order_data_item, $order_item_child);
+        }
+        $custom_children = array();
+        $custom_children = $this->handle_custom_combo($cart_item['product_sku']);
+        foreach ($custom_children as $custom_child) {
+          array_push($order_data_item, $custom_child);
+        }
+  
+        $children_data_item = array();
       }
 
       $request = array(
@@ -259,6 +317,7 @@ trait OrderTraits
         'membership_id' => $current_user_login,
         'order_data_item' => $order_data_item
       );
+      error_log('Request: ' . json_encode($request));
 
       $response = $this->call_api($check_voucher_url, $check_voucher_method, array('Content-Type: application/json'), json_encode($request), $query_params);
       session_start();
@@ -266,7 +325,13 @@ trait OrderTraits
       $_SESSION['voucher_code'] = $voucherId;
       // $cart->calculate_totals();
       WC()->cart->calculate_totals();
-      wp_send_json_success($response);
+      $combinedResponse = array(
+        'url' => $check_voucher_url,
+        'query' => $query_params,
+        'request' => $request,
+        'response' => $response
+      );
+      wp_send_json_success($combinedResponse);
     } catch (Exception $e) {
       wp_send_json_error($e->getMessage(), 500);
     }
@@ -335,6 +400,12 @@ trait OrderTraits
         <?php endforeach; ?>
         <input type="hidden" name="applied_voucher" id="applied_voucher_input" value="">
       </div>
+      <h5 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Bạn có mã giảm giá</h5>
+      <div class="voucher-container">
+        <div>Nếu bạn có mã giảm giá, hãy nhập mã ở đây nhé</div>
+        <input type="text" name="custom_voucher" id="custom_voucher_input" placeholder="Nhập mã giảm giá của bạn">
+        <div class="button" onclick="handleCustomVoucher()">Áp dụng voucher</div>
+      </div>
 
       <h5 class="order_review_heading" style="font-family: 'Noto Serif Display', serif !important;">Đổi điểm PON</h5>
       <div class="voucher-container">
@@ -354,7 +425,16 @@ trait OrderTraits
             verifyVoucher(voucherId);
           });
         });
+        console.log("Dom loaded")
       });
+
+      function handleCustomVoucher() {
+        const customVoucherInput =document.getElementById('custom_voucher_input')
+        if (customVoucherInput) {
+          let value = customVoucherInput.value;
+          verifyVoucher(value);
+        }
+      }
 
       function handlePointExchange() {
         const pointExchangeInput = document.getElementById('point_exchange_input');
@@ -891,6 +971,42 @@ trait OrderTraits
       array_push($result, $custom_item2);
       array_push($result, $custom_item3);
     }
+
+    if ($sku == 'COMBO|CBVB') {
+      $parent_id = 'CBVB';
+      $custom_item1 = array();
+      $custom_item1['Item_Type_Id'] = 'PAS'; //---------------- REPLACE THIS
+      $custom_item1['Quantity'] = 1;
+      $custom_item1['Price'] = 0;
+      $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Item_Id'] = "WWC";
+      $custom_item1['Item_Name'] = 'Whole Wheat Croissant';
+      $custom_item1['Note'] = 'Whole Wheat Croissant';
+
+      $custom_item2 = array();
+      $custom_item2['Item_Type_Id'] = 'GAGB'; //---------------- REPLACE THIS
+      $custom_item2['Quantity'] = 1;
+      $custom_item2['Price'] = 0;
+      $custom_item2['Parent_Id'] = $parent_id;
+      $custom_item2['Item_Id'] = "HRCBT";
+      $custom_item2['Item_Name'] = 'Mood Up! Cold Brew Tea 300ml';
+      $custom_item2['Note'] = 'Mood Up! Cold Brew Tea 300ml';
+      array_push($result, $custom_item1);
+      array_push($result, $custom_item2);
+    }
+
+    if ($sku == 'COMBO|CBBB') {
+      $parent_id = 'CBBB';
+      $custom_item1 = array();
+      $custom_item1['Item_Type_Id'] = 'PAS'; //---------------- REPLACE THIS
+      $custom_item1['Quantity'] = 1;
+      $custom_item1['Price'] = 0;
+      $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Item_Id'] = "HACCP";
+      $custom_item1['Item_Name'] = 'Ham & Cheese Croisant (Plain)';
+      $custom_item1['Note'] = 'Ham & Cheese Croisant (Plain)';
+      array_push($result, $custom_item1);
+    }
     return $result;
   }
 
@@ -1068,7 +1184,7 @@ trait OrderTraits
       $order_item['Item_Id'] = $item_id;
       $order_item['Item_Name'] = str_replace('</span>', '', $order_data_item['name']);
       $order_item['Quantity'] = $order_data_item['quantity'];
-      $order_item['Price'] = $order_data_item['total'];
+      $order_item['Price'] = $product->get_price();
       foreach ($order_data_item['meta_data'] as $key => $meta) {
         if ($meta->key == 'product_extras') {
           $groups = $meta->value['groups'];
@@ -1144,22 +1260,107 @@ trait OrderTraits
     error_log('---ORDER RESPONSE---' . json_encode($response));
     add_post_meta($id, 'request', $order_request, true);
     add_post_meta($id, 'response', $response, true);
+    $this->clear_voucher();
     return json_encode($test_data);
   }
 
-  public function test_order($attr)
+  public function test_order()
   {
-    //TEST CODE TO GET ORDER ID
-    $attr = shortcode_atts(array(
-      'id' => 0
-    ), $attr);
-    $id = $attr['id'];
+    $current_cart = $this->parse_current_cart();
+    $order_data_item = array();
+    $children_data_item = array();
+      foreach ($current_cart as $cart_item) {
+        $item = array();
+        //
+        $sku = '';
+        $variation_id = $cart_item['variation_id'];
 
-    // get order from id
-    if (!$id || $id == 0) {
-      return 'No order id';
-    }
-    return $this->handle_order($id);
+        //SET SKU
+        //isset and not empty
+        if (isset($cart_item['variation_sku']) && !empty($cart_item['variation_sku'])) {
+          $sku = $cart_item['variation_sku'];
+        } else {
+          $sku = $cart_item['product_sku'];
+        }
+
+        //parse sku
+        $sku_parts = $this->parse_product_sku($sku);
+        $item_type_id = '';
+        $item_id = '';
+        $item_product_type = '';
+        if ($sku_parts != '') {
+          $item_type_id = $sku_parts['type_id']; //id of the type of product
+          $item_id = $sku_parts['store_id']; //id of product 
+          $item_product_type = $sku_parts['product_type']; //Depends on SKU, can be COMBO, NORMAL
+        }
+
+
+        //get product name
+        $product_name = $cart_item['product_name'];
+        //if variation id is set, use variation price
+        $item_price = $cart_item['product_price'];
+
+        if (isset($variation_id) && $variation_id != 0) {
+          $item_price = $cart_item['variation_price'];
+        } else {
+          $item_price = $cart_item['product_price'];
+        }
+        $amount = $cart_item['line_total'];
+        //set item
+        $item['Item_Type_Id'] = $item_type_id;
+        $item['Item_Id'] = $item_id;
+        $item['Item_Name'] = $product_name;
+        $price = $item_price;
+        //if original price is set, use original price
+        if (isset($cart_item['original_price'])) {
+          $price = $cart_item['original_price'];
+        }
+        $item['Price'] = $price;
+        $quantity = $cart_item['quantity'];
+        $item['Amount'] = $amount;
+        $item['Quantity'] = $quantity;
+        $item['Note'] = $product_name;
+        //push item to order_data_item
+        array_push($order_data_item, $item);
+        foreach ($cart_item['extras'] as $child_item) {
+          if ($child_item->label == 'Hộp trà') {
+            $tea_result = $this->handle_tea($child_item->value, $cart_item['product_sku']);
+            array_push($children_data_item, $tea_result);
+          }
+          if ($child_item->label == 'Bánh wholecake') {
+            $wholecake_result = $this->handle_wholecake($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $wholecake_result);
+          }
+          if ($child_item->label == 'Vị bánh Brioche 1' || $child_item->label == 'Vị bánh Brioche 2') {
+            $brioche_result = $this->handle_brioche($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $brioche_result);
+          }
+          if ($child_item->label == 'Vị Cold Brew Coffee') {
+            $cold_brew_result = $this->handle_cold_brew($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $cold_brew_result);
+          }
+          if ($child_item->label == 'Chọn Đá/Nóng') {
+            $cold_hot_salty_result = $this->handle_cold_hot_salty($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $cold_hot_salty_result);
+          }
+          if ($child_item->label == 'Chai thứ nhất' || $child_item->label == 'Chai thứ hai' || $child_item->label == 'Chai thứ ba' || $child_item->label == 'Chai thứ tư' || $child_item->label == 'Chai thứ năm' || $child_item->label == 'Chai thứ sáu') {
+            $kombucha_result = $this->handle_kombucha($child_item->value, $cart_item['product_sku']);
+            array_push($order_item_children, $kombucha_result);
+          }
+        }
+        foreach ($order_item_children as $order_item_child) {
+          array_push($order_data_item, $order_item_child);
+        }
+        $custom_children = array();
+        $custom_children = $this->handle_custom_combo($cart_item['product_sku']);
+        foreach ($custom_children as $custom_child) {
+          array_push($order_data_item, $custom_child);
+        }
+  
+        $children_data_item = array();
+      }
+    
+    return json_encode($order_data_item);
   }
 
   public function parse_order_shipping_method($order_data)

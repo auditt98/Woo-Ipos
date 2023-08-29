@@ -87,6 +87,9 @@ class Woo_Ipos_Admin
 		add_filter('body_class', array($this, 'er_logged_in_filter'));
 		// add_action( 'woocommerce_applied_coupon', array($this, 'check_voucher_valid'));
 		add_action('wp_ajax_apply_voucher_action', array($this, 'apply_voucher'));
+		add_action('woocommerce_after_cart_item_quantity_update', array($this, 'clear_voucher'));
+		add_action('woocommerce_before_cart_item_quantity_zero', array($this, 'clear_voucher'));
+		add_action('woocommerce_add_to_cart', array($this, 'clear_voucher'));
 		add_action('wp_ajax_exchange_point_action', array($this, 'exchange_point'));
 		add_action('woocommerce_cart_calculate_fees',  array($this, 'add_custom_fees'));
 		add_action('woocommerce_checkout_process', array($this, 'save_voucher_to_order'));

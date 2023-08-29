@@ -257,7 +257,7 @@ trait CommonTraits
 
     $response_code = wp_remote_retrieve_response_code($response);
     $response_body = wp_remote_retrieve_body($response);
-
+    error_log('----Response from ----' . $url . '~~~' . $response_body);
     // Handle the API response as needed
     // For example, you can decode JSON response using:
     $decoded_response = json_decode($response_body);
