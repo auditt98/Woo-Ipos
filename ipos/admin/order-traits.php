@@ -425,7 +425,6 @@ trait OrderTraits
             verifyVoucher(voucherId);
           });
         });
-        console.log("Dom loaded")
       });
 
       function handleCustomVoucher() {
@@ -473,17 +472,17 @@ trait OrderTraits
             voucher_id: voucherId
           },
           success: function(response) {
-            if (response?.data?.error?.message) {
+            if (response?.data?.response?.error?.message) {
               alert(response.data.error.message);
               jQuery(document.body).trigger("update_checkout");
               return
             }
-            if (response?.data?.data?.Code != 4) {
+            if (response?.data?.response?.data?.Code != 4) {
               alert('Voucher không hợp lệ');
               jQuery(document.body).trigger("update_checkout");
               return;
             }
-            if (response?.data?.data?.Coupon_Code) {
+            if (response?.data?.response?.data?.Coupon_Code) {
               jQuery('#applied_voucher_input').val(response.data.data.Coupon_Code);
             }
             //refresh page
@@ -581,6 +580,7 @@ trait OrderTraits
     $candle_result['Item_Type_Id'] = $candle_item_type_id;
     $candle_result['Quantity'] = 1;
     $candle_result['Price'] = $price;
+    $candle_result['Amount'] = $price;
     $candle_result['Parent_Id'] = '';
     if ($candle == 'Set phụ kiện nến que') {
       $candle_result['Item_Id'] = $pos_nen_que;
@@ -660,6 +660,7 @@ trait OrderTraits
     $tea_result['Item_Type_Id'] = 'CB'; //---------------- REPLACE THIS
     $tea_result['Quantity'] = 1;
     $tea_result['Price'] = 0;
+    $tea_result['Amount'] = 0;
     $tea_result['Parent_Id'] = $parent_id;
 
     if ($tea == 'South Of France') {
@@ -712,6 +713,7 @@ trait OrderTraits
     $cake_result['Item_Type_Id'] = 'WCN'; //---------------- REPLACE THIS
     $cake_result['Quantity'] = 1;
     $cake_result['Price'] = 0;
+    $cake_result['Amount'] = 0;
     $cake_result['Parent_Id'] = $parent_id;
     if ($cake == 'Milky Mille Crepes') {
       $cake_result['Item_Id'] = $pos_milky_mille_crepes;
@@ -781,6 +783,7 @@ trait OrderTraits
     $brioche_result['Item_Type_Id'] = $bri_item_type_id;
     $brioche_result['Quantity'] = 1;
     $brioche_result['Price'] = 0;
+    $brioche_result['Amount'] = 0;
     $brioche_result['Parent_Id'] = $parent_id;
 
     if ($brioche == 'Classic Butter Brioche') {
@@ -812,6 +815,7 @@ trait OrderTraits
     $salty_result['Item_Type_Id'] = $salty_item_type_id;
     $salty_result['Quantity'] = 1;
     $salty_result['Price'] = 0;
+    $salty_result['Amount'] = 0;
     $salty_result['Parent_Id'] = $parent_id;
 
     if ($cold_hot == 'Salty Hand Coffee Đá') {
@@ -838,6 +842,7 @@ trait OrderTraits
     $kombucha_result['Item_Type_Id'] = $komb_type_id;
     $kombucha_result['Quantity'] = 1;
     $kombucha_result['Price'] = 0;
+    $kombucha_result['Amount'] = 0;
     $kombucha_result['Parent_Id'] = $parent_id;
     if ($kombucha == 'Padme Kombucha 750ml') {
       $kombucha_result['Item_Id'] = $pos_padme;
@@ -868,6 +873,7 @@ trait OrderTraits
     $cold_brew_result['Item_Type_Id'] = $cold_brew_type_id;
     $cold_brew_result['Quantity'] = 1;
     $cold_brew_result['Price'] = 0;
+    $cold_brew_result['Amount'] = 0;
     $cold_brew_result['Parent_Id'] = $parent_id;
 
     if ($cold_brew == 'French Vanilla Cold Brew Coffee 290ml') {
@@ -921,6 +927,7 @@ trait OrderTraits
       $custom_item1['Item_Type_Id'] = 'GAGB'; //---------------- REPLACE THIS
       $custom_item1['Quantity'] = 1;
       $custom_item1['Price'] = 0;
+      $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "RCK750ML";
       $custom_item1['Item_Name'] = '01 Rose Champagne Kombucha 750ml';
@@ -930,6 +937,7 @@ trait OrderTraits
       $custom_item2['Item_Type_Id'] = 'GAGAO'; //---------------- REPLACE THIS
       $custom_item2['Quantity'] = 1;
       $custom_item2['Price'] = 0;
+      $custom_item2['Amount'] = 0;
       $custom_item2['Parent_Id'] = $parent_id;
       $custom_item2['Item_Id'] = "FB";
       $custom_item2['Item_Name'] = '01 Bó hoa tươi trong ngày/Flower Bouquet';
@@ -944,6 +952,7 @@ trait OrderTraits
       $custom_item1['Item_Type_Id'] = 'GAGB'; //---------------- REPLACE THIS
       $custom_item1['Quantity'] = 1;
       $custom_item1['Price'] = 0;
+      $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "HRCBT";
       $custom_item1['Item_Name'] = 'Mood Up! Cold Brew Tea 300ml';
@@ -953,6 +962,7 @@ trait OrderTraits
       $custom_item2['Item_Type_Id'] = 'GAGAO'; //---------------- REPLACE THIS
       $custom_item2['Quantity'] = 1;
       $custom_item2['Price'] = 0;
+      $custom_item2['Amount'] = 0;
       $custom_item2['Parent_Id'] = $parent_id;
       $custom_item2['Item_Id'] = "HFBP";
       $custom_item2['Item_Name'] = 'Holiday Flavored Butter Pack';
@@ -962,6 +972,7 @@ trait OrderTraits
       $custom_item3['Item_Type_Id'] = 'CB'; //---------------- REPLACE THIS
       $custom_item3['Quantity'] = 1;
       $custom_item3['Price'] = 0;
+      $custom_item3['Amount'] = 0;
       $custom_item3['Parent_Id'] = $parent_id;
       $custom_item3['Item_Id'] = "HCM";
       $custom_item3['Item_Name'] = 'Houjicha Cocoa Mix';
@@ -978,6 +989,7 @@ trait OrderTraits
       $custom_item1['Item_Type_Id'] = 'PAS'; //---------------- REPLACE THIS
       $custom_item1['Quantity'] = 1;
       $custom_item1['Price'] = 0;
+      $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "WWC";
       $custom_item1['Item_Name'] = 'Whole Wheat Croissant';
@@ -987,6 +999,7 @@ trait OrderTraits
       $custom_item2['Item_Type_Id'] = 'GAGB'; //---------------- REPLACE THIS
       $custom_item2['Quantity'] = 1;
       $custom_item2['Price'] = 0;
+      $custom_item2['Amount'] = 0;
       $custom_item2['Parent_Id'] = $parent_id;
       $custom_item2['Item_Id'] = "HRCBT";
       $custom_item2['Item_Name'] = 'Mood Up! Cold Brew Tea 300ml';
@@ -1001,6 +1014,7 @@ trait OrderTraits
       $custom_item1['Item_Type_Id'] = 'PAS'; //---------------- REPLACE THIS
       $custom_item1['Quantity'] = 1;
       $custom_item1['Price'] = 0;
+      $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "HACCP";
       $custom_item1['Item_Name'] = 'Ham & Cheese Croisant (Plain)';
