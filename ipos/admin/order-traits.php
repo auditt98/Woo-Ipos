@@ -472,6 +472,7 @@ trait OrderTraits
             voucher_id: voucherId
           },
           success: function(response) {
+            console.log("response", response)
             if (response?.data?.response?.error?.message) {
               alert(response.data.error.message);
               jQuery(document.body).trigger("update_checkout");
@@ -483,7 +484,7 @@ trait OrderTraits
               return;
             }
             if (response?.data?.response?.data?.Coupon_Code) {
-              jQuery('#applied_voucher_input').val(response.data.data.Coupon_Code);
+              jQuery('#applied_voucher_input').val(response?.data?.response?.data?.Coupon_Code);
             }
             //refresh page
             jQuery(document.body).trigger("update_checkout");
