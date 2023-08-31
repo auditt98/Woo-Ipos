@@ -271,29 +271,35 @@ trait OrderTraits
         $item['Quantity'] = $quantity;
         $item['Note'] = $product_name;
         //push item to order_data_item
-        array_push($order_data_item, $item);
+
         foreach ($cart_item['extras'] as $child_item) {
           if ($child_item->label == 'Hộp trà') {
+            $item['Package_Id'] = $item_id;
             $tea_result = $this->handle_tea($child_item->value, $cart_item['product_sku']);
             array_push($children_data_item, $tea_result);
           }
           if ($child_item->label == 'Bánh wholecake') {
+            $item['Package_Id'] = $item_id;
             $wholecake_result = $this->handle_wholecake($child_item->value, $cart_item['product_sku']);
             array_push($order_item_children, $wholecake_result);
           }
           if ($child_item->label == 'Vị bánh Brioche 1' || $child_item->label == 'Vị bánh Brioche 2') {
+            $item['Package_Id'] = $item_id;
             $brioche_result = $this->handle_brioche($child_item->value, $cart_item['product_sku']);
             array_push($order_item_children, $brioche_result);
           }
           if ($child_item->label == 'Vị Cold Brew Coffee') {
+            $item['Package_Id'] = $item_id;
             $cold_brew_result = $this->handle_cold_brew($child_item->value, $cart_item['product_sku']);
             array_push($order_item_children, $cold_brew_result);
           }
           if ($child_item->label == 'Chọn Đá/Nóng') {
+            $item['Package_Id'] = $item_id;
             $cold_hot_salty_result = $this->handle_cold_hot_salty($child_item->value, $cart_item['product_sku']);
             array_push($order_item_children, $cold_hot_salty_result);
           }
           if ($child_item->label == 'Chai thứ nhất' || $child_item->label == 'Chai thứ hai' || $child_item->label == 'Chai thứ ba' || $child_item->label == 'Chai thứ tư' || $child_item->label == 'Chai thứ năm' || $child_item->label == 'Chai thứ sáu') {
+            $item['Package_Id'] = $item_id;
             $kombucha_result = $this->handle_kombucha($child_item->value, $cart_item['product_sku']);
             array_push($order_item_children, $kombucha_result);
           }
@@ -304,8 +310,10 @@ trait OrderTraits
         $custom_children = array();
         $custom_children = $this->handle_custom_combo($cart_item['product_sku']);
         foreach ($custom_children as $custom_child) {
+          $item['Package_Id'] = $item_id;
           array_push($order_data_item, $custom_child);
         }
+        array_push($order_data_item, $item);
   
         $children_data_item = array();
       }
@@ -474,7 +482,7 @@ trait OrderTraits
           success: function(response) {
             console.log("response", response)
             if (response?.data?.response?.error?.message) {
-              alert(response.data.error.message);
+              alert(response?.data?.response?.error?.message);
               jQuery(document.body).trigger("update_checkout");
               return
             }
@@ -663,6 +671,7 @@ trait OrderTraits
     $tea_result['Price'] = 0;
     $tea_result['Amount'] = 0;
     $tea_result['Parent_Id'] = $parent_id;
+    $tea_result['Package_id'] = $parent_id;
 
     if ($tea == 'South Of France') {
       $tea_result['Item_Id'] = $pos_south_of_france;
@@ -716,6 +725,7 @@ trait OrderTraits
     $cake_result['Price'] = 0;
     $cake_result['Amount'] = 0;
     $cake_result['Parent_Id'] = $parent_id;
+    $cake_result['Package_Id'] = $parent_id;
     if ($cake == 'Milky Mille Crepes') {
       $cake_result['Item_Id'] = $pos_milky_mille_crepes;
       $cake_result['Item_Name'] = 'Milky Mille Crepes';
@@ -786,6 +796,7 @@ trait OrderTraits
     $brioche_result['Price'] = 0;
     $brioche_result['Amount'] = 0;
     $brioche_result['Parent_Id'] = $parent_id;
+    $brioche_result['Package_Id'] = $parent_id;
 
     if ($brioche == 'Classic Butter Brioche') {
       $brioche_result['Item_Id'] = $pos_classic_butter_bri;
@@ -818,6 +829,7 @@ trait OrderTraits
     $salty_result['Price'] = 0;
     $salty_result['Amount'] = 0;
     $salty_result['Parent_Id'] = $parent_id;
+    $salty_result['Package_Id'] = $parent_id;
 
     if ($cold_hot == 'Salty Hand Coffee Đá') {
       $salty_result['Item_Id'] = $pos_salty_hand_cold;
@@ -845,6 +857,8 @@ trait OrderTraits
     $kombucha_result['Price'] = 0;
     $kombucha_result['Amount'] = 0;
     $kombucha_result['Parent_Id'] = $parent_id;
+    $kombucha_result['Package_Id'] = $parent_id;
+
     if ($kombucha == 'Padme Kombucha 750ml') {
       $kombucha_result['Item_Id'] = $pos_padme;
       $kombucha_result['Item_Name'] = 'Padme Kombucha 750ml';
@@ -876,6 +890,7 @@ trait OrderTraits
     $cold_brew_result['Price'] = 0;
     $cold_brew_result['Amount'] = 0;
     $cold_brew_result['Parent_Id'] = $parent_id;
+    $cold_brew_result['Package_Id'] = $parent_id;
 
     if ($cold_brew == 'French Vanilla Cold Brew Coffee 290ml') {
       $cold_brew_result['Item_Id'] = $pos_cold_brew_french_vanilla;
@@ -930,6 +945,7 @@ trait OrderTraits
       $custom_item1['Price'] = 0;
       $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Package_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "RCK750ML";
       $custom_item1['Item_Name'] = '01 Rose Champagne Kombucha 750ml';
       $custom_item1['Note'] = '01 Rose Champagne Kombucha 750ml';
@@ -940,6 +956,7 @@ trait OrderTraits
       $custom_item2['Price'] = 0;
       $custom_item2['Amount'] = 0;
       $custom_item2['Parent_Id'] = $parent_id;
+      $custom_item2['Package_Id'] = $parent_id;
       $custom_item2['Item_Id'] = "FB";
       $custom_item2['Item_Name'] = '01 Bó hoa tươi trong ngày/Flower Bouquet';
       $custom_item2['Note'] = '01 Bó hoa tươi trong ngày/Flower Bouquet';
@@ -955,6 +972,7 @@ trait OrderTraits
       $custom_item1['Price'] = 0;
       $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Package_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "HRCBT";
       $custom_item1['Item_Name'] = 'Mood Up! Cold Brew Tea 300ml';
       $custom_item1['Note'] = 'Mood Up! Cold Brew Tea 300ml';
@@ -965,6 +983,7 @@ trait OrderTraits
       $custom_item2['Price'] = 0;
       $custom_item2['Amount'] = 0;
       $custom_item2['Parent_Id'] = $parent_id;
+      $custom_item2['Package_Id'] = $parent_id;
       $custom_item2['Item_Id'] = "HFBP";
       $custom_item2['Item_Name'] = 'Holiday Flavored Butter Pack';
       $custom_item2['Note'] = 'Holiday Flavored Butter Pack';
@@ -975,6 +994,7 @@ trait OrderTraits
       $custom_item3['Price'] = 0;
       $custom_item3['Amount'] = 0;
       $custom_item3['Parent_Id'] = $parent_id;
+      $custom_item3['Package_Id'] = $parent_id;
       $custom_item3['Item_Id'] = "HCM";
       $custom_item3['Item_Name'] = 'Houjicha Cocoa Mix';
       $custom_item3['Note'] = 'Houjicha Cocoa Mix';
@@ -992,6 +1012,7 @@ trait OrderTraits
       $custom_item1['Price'] = 0;
       $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Package_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "WWC";
       $custom_item1['Item_Name'] = 'Whole Wheat Croissant';
       $custom_item1['Note'] = 'Whole Wheat Croissant';
@@ -1002,6 +1023,7 @@ trait OrderTraits
       $custom_item2['Price'] = 0;
       $custom_item2['Amount'] = 0;
       $custom_item2['Parent_Id'] = $parent_id;
+      $custom_item2['Package_Id'] = $parent_id;
       $custom_item2['Item_Id'] = "HRCBT";
       $custom_item2['Item_Name'] = 'Mood Up! Cold Brew Tea 300ml';
       $custom_item2['Note'] = 'Mood Up! Cold Brew Tea 300ml';
@@ -1017,6 +1039,7 @@ trait OrderTraits
       $custom_item1['Price'] = 0;
       $custom_item1['Amount'] = 0;
       $custom_item1['Parent_Id'] = $parent_id;
+      $custom_item1['Package_Id'] = $parent_id;
       $custom_item1['Item_Id'] = "HACCP";
       $custom_item1['Item_Name'] = 'Ham & Cheese Croisant (Plain)';
       $custom_item1['Note'] = 'Ham & Cheese Croisant (Plain)';
@@ -1210,26 +1233,32 @@ trait OrderTraits
           foreach ($groups as $key => $group_line) {
             foreach ($group_line as $gr_line => $group) {
               if ($group['label'] == 'Hộp trà') {
+                $order_item['package_id'] = $item_id;
                 $tea_result = $this->handle_tea($group['value_without_price'], $item_id);
                 array_push($order_item_children, $tea_result);
               }
               if ($group['label'] == 'Bánh wholecake') {
+                $order_item['package_id'] = $item_id;
                 $wholecake_result = $this->handle_wholecake($group['value_without_price'], $item_id);
                 array_push($order_item_children, $wholecake_result);
               }
               if ($group['label'] == 'Vị bánh Brioche 1' || $group['label'] == 'Vị bánh Brioche 2') {
+                $order_item['package_id'] = $item_id;
                 $brioche_result = $this->handle_brioche($group['value'], $item_id);
                 array_push($order_item_children, $brioche_result);
               }
               if ($group['label'] == 'Vị Cold Brew Coffee') {
+                $order_item['package_id'] = $item_id;
                 $cold_brew_result = $this->handle_cold_brew($group['value'], $item_id);
                 array_push($order_item_children, $cold_brew_result);
               }
               if ($group['label'] == 'Chọn Đá/Nóng') {
+                $order_item['package_id'] = $item_id;
                 $cold_hot_salty_result = $this->handle_cold_hot_salty($group['value'], $item_id);
                 array_push($order_item_children, $cold_hot_salty_result);
               }
               if ($group['label'] == 'Chai thứ nhất' || $group['label'] == 'Chai thứ hai' || $group['label'] == 'Chai thứ ba' || $group['label'] == 'Chai thứ tư' || $group['label'] == 'Chai thứ năm' || $group['label'] == 'Chai thứ sáu') {
+                $order_item['package_id'] = $item_id;
                 $kombucha_result = $this->handle_kombucha($group['value'], $item_id);
                 array_push($order_item_children, $kombucha_result);
               }
@@ -1237,16 +1266,16 @@ trait OrderTraits
           }
         }
       }
-      array_push($order_items, $order_item);
       foreach ($order_item_children as $order_item_child) {
         array_push($order_items, $order_item_child);
       }
       $custom_children = array();
       $custom_children = $this->handle_custom_combo($sku);
       foreach ($custom_children as $custom_child) {
+        $order_item['package_id'] = $item_id;
         array_push($order_items, $custom_child);
       }
-
+      array_push($order_items, $order_item);
       $order_item_children = array();
     }
 
